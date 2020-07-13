@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "351526989264",
+    "firebase_url": "https://bolt-clone.firebaseio.com",
+    "project_id": "bolt-clone",
+    "storage_bucket": "bolt-clone.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351526989264:android:b145ff0a0fc98ffd16ddd5",
+        "android_client_info": {
+          "package_name": "com.example.bolt_clone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "351526989264-ifn0kv1n06vs92l2u4dpk1ib7rk6qgq4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6BD1VqZu1KT58mvDpzWR4elQo3Biokr4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "351526989264-ifn0kv1n06vs92l2u4dpk1ib7rk6qgq4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

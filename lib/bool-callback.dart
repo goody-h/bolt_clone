@@ -1,0 +1,1 @@
+typedef BoolCallback = bool Function();
