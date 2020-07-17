@@ -1,7 +1,10 @@
 import 'dart:ui';
 import 'dart:math';
+import 'package:bolt_clone/models/invoice.dart';
+import 'package:bolt_clone/models/user.dart';
 import 'package:flutter/material.dart';
 import './bool-callback.dart';
+import 'payment.dart';
 
 typedef InsetCallback = void Function(double, bool, bool);
 typedef PopCallback = void Function(BoolCallback);
@@ -55,33 +58,27 @@ class _ActionSheetState extends State<ActionSheet>
         case Action.PLAN_END:
           this.action = Action.HOME;
           _controller.reverse();
-          // return to home display
           break;
         case Action.PICK:
           this.action = Action.PLAN_END;
           widget.setInset(HomeAction.minHeight, false, false);
           _controller.forward();
-          // set plan display
           break;
         case Action.RIDE:
           this.action = Action.HOME;
           widget.setInset(HomeAction.minHeight, true, false);
-          // set home display
           break;
         case Action.RIDE_DETAILS:
           this.action = Action.RIDE;
           _controller.reverse();
-          // set ride display
           break;
         case Action.CONFIRM:
           this.action = Action.RIDE;
           widget.setInset(RideAction.minHeight, true, true);
-          // set ride display
           break;
         case Action.PLAN_START:
           this.action = Action.CONFIRM;
           widget.setInset(PickAction.minHeight, true, true);
-          // set ride display
           break;
         default:
       }
@@ -91,28 +88,26 @@ class _ActionSheetState extends State<ActionSheet>
       this.action = action;
       switch (action) {
         case Action.HOME:
-          widget.setInset(
-              HomeAction.minHeight, current != Action.PLAN_END, false);
-          // set home display
+          if (setstate)
+            widget.setInset(
+                HomeAction.minHeight, current != Action.PLAN_END, false);
           break;
         case Action.PICK:
           widget.setInset(PickAction.minHeight, false, true);
-          // set pick display
           break;
         case Action.RIDE:
           if (current == Action.PLAN_END || current == Action.PICK) {
             _controller.value = 0;
           }
-          widget.setInset(
-              RideAction.minHeight, current != Action.RIDE_DETAILS, true);
-          // set ride display
+
+          if (setstate)
+            widget.setInset(
+                RideAction.minHeight, current != Action.RIDE_DETAILS, true);
           break;
         case Action.CONFIRM:
-          // set ride display
           widget.setInset(PickAction.minHeight, true, true);
           break;
         case Action.PLAN_START:
-          // set pickup display
           break;
         default:
       }
@@ -410,10 +405,17 @@ class PickAction extends StatelessWidget {
             ),
             RaisedButton(
               child: Text("Confirm"),
-              onPressed: () {
+              onPressed: () async {
                 if (!isPickup) {
                   actionCallback(Action.RIDE, true);
-                } else {}
+                } else {
+                  // Scaffold.of(context);
+                  // Navigator.of(context).push(MaterialPageRoute(
+                  //     builder: (BuildContext context) => HomePage()));
+                  var manager = PaymentManager(handleStatus: (m) {});
+
+                  await manager.checkout(context, Invoice(), User());
+                }
               },
             ),
           ],
