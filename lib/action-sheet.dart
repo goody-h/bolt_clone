@@ -412,7 +412,9 @@ class PickAction extends StatelessWidget {
                   // Scaffold.of(context);
                   // Navigator.of(context).push(MaterialPageRoute(
                   //     builder: (BuildContext context) => HomePage()));
-                  var manager = PaymentManager(handleStatus: (m) {});
+                  var manager = PaymentManager(handleStatus: (m) {
+                    _showMessage(context, m["message"]);
+                  });
 
                   await manager.checkout(context, Invoice(), User());
                 }
@@ -422,6 +424,17 @@ class PickAction extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _showMessage(BuildContext context, String message,
+      [Duration duration = const Duration(seconds: 5)]) {
+    Scaffold.of(context).showSnackBar(new SnackBar(
+      content: new Text(message),
+      duration: duration,
+      action: new SnackBarAction(
+          label: 'CLOSE',
+          onPressed: () => Scaffold.of(context).removeCurrentSnackBar()),
+    ));
   }
 }
 

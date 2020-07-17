@@ -75,7 +75,7 @@ class PaymentManager {
       );
       print('Response = $response');
       String ref = response.reference;
-      _showMessage("Checking transaction state, ref: $ref");
+      _showMessage("Checking transaction state");
 
       var result = await (invoice != null
           ? verifyAndAuthorizeRide(
