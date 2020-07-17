@@ -44,6 +44,10 @@ dependencies:
   geoflutterfire: ^2.1.0
 
   geolocator: ^5.3.2+2
+
+  flutter_paystack: ^1.0.3+1
+
+  # http_interceptor: ^0.3.2
   # location: ^3.0.2
 
   # scrollable_bottom_sheet: ^0.2.1
