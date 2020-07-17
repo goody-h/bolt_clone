@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -52,7 +53,13 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         _animateInset = _controller.value;
       });
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      hasInit.complete(true);
+    });
   }
+
+  Completer<bool> hasInit = Completer();
 
   @override
   void dispose() {
@@ -108,8 +115,10 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     _scaffoldKey.currentState.openDrawer();
   }
 
-  _setBottomInset(double inset, bool animate, bool hasControl) {
+  _setBottomInset(double inset, bool animate, bool hasControl) async {
     _bottomInset = inset;
+
+    await hasInit.future;
 
     if (hasControl != transferControl) {
       transferControl = hasControl;
@@ -187,13 +196,17 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
               child: SafeArea(
                 child: Padding(
                   padding: EdgeInsets.all(15),
-                  child: FloatingActionButton(
-                    backgroundColor: Colors.white,
-                    onPressed: _handleActionButton,
-                    child: AnimatedIcon(
-                      icon: AnimatedIcons.menu_arrow,
-                      progress: _iconController,
-                      color: Colors.black,
+                  child: Transform.scale(
+                    scale: 0.85,
+                    origin: Offset(0, 0),
+                    child: FloatingActionButton(
+                      backgroundColor: Colors.white,
+                      onPressed: _handleActionButton,
+                      child: AnimatedIcon(
+                        icon: AnimatedIcons.menu_arrow,
+                        progress: _iconController,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
