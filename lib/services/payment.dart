@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart' as http;
 
-import './models/invoice.dart';
-import './models/user.dart';
+import '../models/invoice.dart';
+import '../models/user.dart';
 
 // String backendUrl = 'https://bolt-paystack.herokuapp.com';
 // String backendUrl = 'https://bold-prod.herokuapp.com';
