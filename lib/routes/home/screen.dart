@@ -7,6 +7,8 @@ import './screens/pickup.dart';
 import './screens/review.dart';
 import './utils.dart';
 
+export './screens/default.dart';
+
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, this.inset, this.setInset, this.registerOnPop})
       : super(key: key);

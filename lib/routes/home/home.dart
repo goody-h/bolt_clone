@@ -190,9 +190,8 @@ class HomeMainState extends State<HomeMain> with TickerProviderStateMixin {
     });
   }
 
-  double _bottomInset = 250;
-  // double _animateInset = 0.4;
-  double _animateInset = 1;
+  double _bottomInset = DefaultScreen.minHeight;
+  double _animateInset = 0.4;
   bool transferControl = false;
 
   _openDrawer(BuildContext context) {
@@ -211,8 +210,6 @@ class HomeMainState extends State<HomeMain> with TickerProviderStateMixin {
       else
         _iconController.reverse();
     }
-
-    return;
 
     if (animate) {
       _controller.value = 0.4;
