@@ -1,16 +1,113 @@
 import 'dart:async';
+import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../models/types.dart';
 import './screen.dart';
 
+import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../blocs/blocs.dart';
+
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with TickerProviderStateMixin {
+class _HomeState extends State<Home> {
+  _registerPop(BoolCallback callback) {
+    onPopCallback = callback;
+  }
+
+  BoolCallback onPopCallback;
+
+  @override
+  Widget build(BuildContext context) {
+    return HomeScaffold(
+      onBackPressed: _onBackPressed,
+      drawer: HomeDrawer(),
+      child: HomeMain(registerPop: _registerPop),
+    );
+  }
+
+  Future<bool> _onBackPressed() {
+    // return showDialog(
+    //       context: context,
+    //       builder: (context) => new AlertDialog(
+    //         title: new Text('Are you sure?'),
+    //         content: new Text('Do you want to exit an App'),
+    //         actions: <Widget>[
+    //           new GestureDetector(
+    //             onTap: () => Navigator.of(context).pop(false),
+    //             child: Text("NO"),
+    //           ),
+    //           SizedBox(height: 16),
+    //           new GestureDetector(
+    //             onTap: () => Navigator.of(context).pop(true),
+    //             child: Text("YES"),
+    //           ),
+    //         ],
+    //       ),
+    //     ) ??
+    bool shouldPop = onPopCallback() && true;
+    return Future.value(shouldPop);
+  }
+}
+
+typedef BoolCallbackAsync = Future<bool> Function();
+
+class HomeScaffold extends StatelessWidget {
+  HomeScaffold({Key key, this.child, this.drawer, this.onBackPressed})
+      : super(key: key);
+  final Widget child;
+  final Widget drawer;
+  final BoolCallbackAsync onBackPressed;
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: onBackPressed,
+      child: Scaffold(
+        drawer: Drawer(
+          child: drawer,
+        ),
+        drawerEnableOpenDragGesture: false,
+        body: child,
+      ),
+    );
+  }
+}
+
+class HomeDrawer extends StatelessWidget {
+  _closeDrawer(BuildContext context) => Navigator.of(context).pop();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          const Text('This is the Drawer'),
+          RaisedButton(
+            onPressed: () => _closeDrawer(context),
+            child: const Text('Close Drawer'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HomeMain extends StatefulWidget {
+  HomeMain({Key key, @required this.registerPop}) : super(key: key);
+
+  final void Function(BoolCallback) registerPop;
+
+  @override
+  HomeMainState createState() => HomeMainState();
+}
+
+class HomeMainState extends State<HomeMain> with TickerProviderStateMixin {
   AnimationController _iconController;
   AnimationController _controller;
 
@@ -39,10 +136,15 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       hasInit.complete(true);
+      Future.delayed(Duration(milliseconds: 700), () {
+        loadMap.complete(true);
+        setState(() {});
+      });
     });
   }
 
   Completer<bool> hasInit = Completer();
+  Completer<bool> loadMap = Completer();
 
   @override
   void dispose() {
@@ -78,7 +180,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           CameraUpdate.newCameraPosition(
             CameraPosition(
               target: LatLng(position.latitude, position.longitude),
-              zoom: 18.0,
+              zoom: 14.0,
             ),
           ),
         );
@@ -88,14 +190,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     });
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  double _bottomInset = 0;
-  double _animateInset = 0.4;
+  double _bottomInset = 250;
+  // double _animateInset = 0.4;
+  double _animateInset = 1;
   bool transferControl = false;
 
-  _openDrawer() {
-    _scaffoldKey.currentState.openDrawer();
+  _openDrawer(BuildContext context) {
+    Scaffold.of(context).openDrawer();
   }
 
   _setBottomInset(double inset, bool animate, bool hasControl) async {
@@ -111,6 +212,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         _iconController.reverse();
     }
 
+    return;
+
     if (animate) {
       _controller.value = 0.4;
       _controller.forward();
@@ -119,129 +222,96 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     }
   }
 
-  _closeDrawer() {
-    Navigator.of(context).pop();
-  }
-
-  _handleActionButton() {
+  _handleActionButton(BuildContext context) {
     if (transferControl) return onPopCallback();
-    _openDrawer();
+    _openDrawer(context);
   }
 
   _registerPop(BoolCallback callback) {
     onPopCallback = callback;
+    widget.registerPop(callback);
   }
 
   BoolCallback onPopCallback;
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onBackPressed,
-      child: Scaffold(
-        key: _scaffoldKey,
-        drawer: Drawer(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const Text('This is the Drawer'),
-                RaisedButton(
-                  onPressed: _closeDrawer,
-                  child: const Text('Close Drawer'),
-                ),
-              ],
-            ),
-          ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<TripBloc>(
+          create: (context) {
+            return TripBloc(
+              dataRepository: BlocProvider.of<UserBloc>(context).dataRepository,
+            )..add(LoadTrip());
+          },
         ),
-        drawerEnableOpenDragGesture: false,
-        body: Stack(
-          children: <Widget>[
-            GoogleMap(
-              initialCameraPosition: _initialLocation,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: false,
-              mapType: MapType.normal,
-              zoomGesturesEnabled: true,
-              zoomControlsEnabled: false,
-              onMapCreated: (GoogleMapController controller) {
-                mapController = controller;
-                _getCurrentLocation();
-              },
-              onCameraMove: (CameraPosition position) {},
-              onCameraIdle: () {},
-              padding:
-                  EdgeInsets.only(bottom: (_bottomInset + 10) * _animateInset),
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              child: SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.all(15),
-                  child: Transform.scale(
-                    scale: 0.85,
-                    origin: Offset(0, 0),
-                    child: FloatingActionButton(
-                      backgroundColor: Colors.white,
-                      onPressed: _handleActionButton,
-                      child: AnimatedIcon(
-                        icon: AnimatedIcons.menu_arrow,
-                        progress: _iconController,
-                        color: Colors.black,
-                      ),
+      ],
+      child: Stack(
+        children: <Widget>[
+          loadMap.isCompleted
+              ? GoogleMap(
+                  initialCameraPosition: _initialLocation,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  mapType: MapType.normal,
+                  zoomGesturesEnabled: true,
+                  zoomControlsEnabled: false,
+                  onMapCreated: (GoogleMapController controller) {
+                    mapController = controller;
+                    _getCurrentLocation();
+                  },
+                  onCameraMove: (CameraPosition position) {},
+                  onCameraIdle: () {},
+                  padding:
+                      EdgeInsets.only(bottom: (_bottomInset) * _animateInset),
+                )
+              : Container(),
+          Positioned(
+            top: 0,
+            left: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(15),
+                child: Transform.scale(
+                  scale: 0.85,
+                  origin: Offset(0, 0),
+                  child: FloatingActionButton(
+                    backgroundColor: Colors.white,
+                    onPressed: () => _handleActionButton(context),
+                    child: AnimatedIcon(
+                      icon: AnimatedIcons.menu_arrow,
+                      progress: _iconController,
+                      color: Colors.black,
                     ),
                   ),
                 ),
               ),
             ),
-            Positioned(
-              bottom: 15 + _bottomInset * _animateInset,
-              right: 15,
-              child: Visibility(
-                child: FloatingActionButton(
-                  backgroundColor: Colors.white,
-                  onPressed: _getCurrentLocation,
-                  child: Icon(
-                    Icons.my_location,
-                    color: Colors.black,
-                  ),
-                  mini: true,
+          ),
+          Positioned(
+            bottom: 15 + _bottomInset * _animateInset,
+            right: 15,
+            child: Visibility(
+              child: FloatingActionButton(
+                heroTag: "location",
+                backgroundColor: Colors.white,
+                onPressed: _getCurrentLocation,
+                child: Icon(
+                  Icons.my_location,
+                  color: Colors.black,
                 ),
-                visible: !transferControl,
+                mini: true,
               ),
+              visible: !transferControl,
             ),
-            HomeScreen(
-              inset: _animateInset,
-              setInset: _setBottomInset,
-              registerOnPop: _registerPop,
-            ),
-          ],
-        ),
+          ),
+          HomeScreen(
+            inset: _animateInset,
+            setInset: _setBottomInset,
+            registerOnPop: _registerPop,
+          ),
+        ],
       ),
     );
-  }
-
-  Future<bool> _onBackPressed() {
-    // return showDialog(
-    //       context: context,
-    //       builder: (context) => new AlertDialog(
-    //         title: new Text('Are you sure?'),
-    //         content: new Text('Do you want to exit an App'),
-    //         actions: <Widget>[
-    //           new GestureDetector(
-    //             onTap: () => Navigator.of(context).pop(false),
-    //             child: Text("NO"),
-    //           ),
-    //           SizedBox(height: 16),
-    //           new GestureDetector(
-    //             onTap: () => Navigator.of(context).pop(true),
-    //             child: Text("YES"),
-    //           ),
-    //         ],
-    //       ),
-    //     ) ??
-    bool shouldPop = onPopCallback() && true;
-    return Future.value(shouldPop);
   }
 }

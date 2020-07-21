@@ -47,6 +47,17 @@ dependencies:
 
   flutter_paystack: ^1.0.3+1
 
+  flutter_bloc: ^5.0.1
+
+  equatable: ^1.2.2
+
+  meta: ^1.1.8
+
+  data_repository:
+    path: data_repository
+  user_repository:
+    path: user_repository
+
   # http_interceptor: ^0.3.2
   # location: ^3.0.2
 
