@@ -34,6 +34,7 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      fadeInLogo = true;
       _controller.repeat(reverse: true);
     });
   }
@@ -51,6 +52,7 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
   }
 
   var translate = false;
+  var fadeInLogo = false;
 
   _pushBuilder(Widget page) {
     return PageRouteBuilder(
@@ -59,10 +61,6 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         var tween = Tween(begin: Offset(1.0, 0.0), end: Offset.zero);
         var fadeAnimation = animation.drive(tween);
-        // fadeAnimation.addListener(() {
-        //   if (!translate)
-
-        // });
         return SlideTransition(
           position: fadeAnimation,
           child: child,
@@ -73,12 +71,6 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
 
   Future<Widget> _buidPageAsync() async {
     return Future.microtask(() => Home());
-  }
-
-  _pushRoute() {
-    return MaterialPageRoute(
-      builder: (_) => Home(),
-    );
   }
 
   @override
@@ -106,10 +98,14 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
               color:
                   Colors.green.withGreen(100 + (155 * _controller.value) ~/ 1),
               child: Center(
-                child: Icon(
-                  Icons.local_taxi,
-                  color: Colors.white,
-                  size: 60,
+                child: AnimatedOpacity(
+                  opacity: fadeInLogo ? 1.0 : 0.0,
+                  duration: Duration(milliseconds: 800),
+                  child: Icon(
+                    Icons.local_taxi,
+                    color: Colors.white,
+                    size: 60,
+                  ),
                 ),
               ),
             ),
