@@ -1,5 +1,6 @@
 import 'package:bolt_clone/blocs/authentication_bloc/bloc.dart';
 import 'package:bolt_clone/routes/home/home.dart';
+import 'package:bolt_clone/routes/login/login.dart';
 import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,7 +29,8 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
         .asBroadcastStream()
         .listen((event) {
       if (event is Authenticated) {
-        _pushHome();
+        _pushLogin();
+        // _pushHome();
       } else if (event is Unauthenticated) {
         _pushLogin();
       }
@@ -39,7 +41,12 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
     });
   }
 
-  _pushLogin() {}
+  _pushLogin() async {
+    var page = await _buidLoginAsync();
+    var route = _loginRoute(page);
+    _controller.stop();
+    Navigator.of(context).pushReplacement(route);
+  }
 
   _pushHome() async {
     var page = await _buidPageAsync();
@@ -53,6 +60,21 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
 
   var translate = false;
   var fadeInLogo = false;
+
+  _loginRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (_, __, ___) => page,
+      transitionDuration: Duration(milliseconds: 500),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        var tween = Tween(begin: 0.0, end: 1.0);
+        var fadeAnimation = animation.drive(tween);
+        return FadeTransition(
+          opacity: fadeAnimation,
+          child: child,
+        );
+      },
+    );
+  }
 
   _pushBuilder(Widget page) {
     return PageRouteBuilder(
@@ -70,7 +92,13 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
   }
 
   Future<Widget> _buidPageAsync() async {
-    return Future.microtask(() => Home());
+    return Future.microtask(() => Home(
+          mapDelay: Duration(milliseconds: 700),
+        ));
+  }
+
+  Future<Widget> _buidLoginAsync() async {
+    return Future.microtask(() => Login());
   }
 
   @override
@@ -83,36 +111,41 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        AnimatedPositioned(
-          top: 0,
-          bottom: 0,
-          width: maxWidth,
-          left: translate ? -maxWidth : 0,
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) => Container(
-              width: double.infinity,
-              height: double.infinity,
-              color:
-                  Colors.green.withGreen(100 + (155 * _controller.value) ~/ 1),
-              child: Center(
-                child: AnimatedOpacity(
-                  opacity: fadeInLogo ? 1.0 : 0.0,
-                  duration: Duration(milliseconds: 800),
-                  child: Icon(
-                    Icons.local_taxi,
-                    color: Colors.white,
-                    size: 60,
+    return Scaffold(
+      body: Stack(
+        children: <Widget>[
+          AnimatedPositioned(
+            top: 0,
+            bottom: 0,
+            width: maxWidth,
+            left: translate ? -maxWidth : 0,
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) => Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.green
+                    .withGreen(100 + (155 * _controller.value) ~/ 1),
+                child: Center(
+                  child: AnimatedOpacity(
+                    opacity: fadeInLogo ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: 800),
+                    child: Hero(
+                      tag: "logo",
+                      child: Icon(
+                        Icons.local_taxi,
+                        color: Colors.white,
+                        size: 100,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
+            duration: Duration(milliseconds: 500),
           ),
-          duration: Duration(milliseconds: 500),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

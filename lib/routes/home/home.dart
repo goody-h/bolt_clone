@@ -11,6 +11,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/blocs.dart';
 
 class Home extends StatefulWidget {
+  Home({Key key, this.mapDelay = const Duration(milliseconds: 400)})
+      : super(key: key);
+
+  final Duration mapDelay;
   @override
   _HomeState createState() => _HomeState();
 }
@@ -27,7 +31,10 @@ class _HomeState extends State<Home> {
     return HomeScaffold(
       onBackPressed: _onBackPressed,
       drawer: HomeDrawer(),
-      child: HomeMain(registerPop: _registerPop),
+      child: HomeMain(
+        registerPop: _registerPop,
+        mapDelay: widget.mapDelay,
+      ),
     );
   }
 
@@ -99,9 +106,11 @@ class HomeDrawer extends StatelessWidget {
 }
 
 class HomeMain extends StatefulWidget {
-  HomeMain({Key key, @required this.registerPop}) : super(key: key);
+  HomeMain({Key key, @required this.registerPop, this.mapDelay})
+      : super(key: key);
 
   final void Function(BoolCallback) registerPop;
+  final Duration mapDelay;
 
   @override
   HomeMainState createState() => HomeMainState();
@@ -136,7 +145,7 @@ class HomeMainState extends State<HomeMain> with TickerProviderStateMixin {
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       hasInit.complete(true);
-      Future.delayed(Duration(milliseconds: 700), () {
+      Future.delayed(widget.mapDelay, () {
         loadMap.complete(true);
         setState(() {});
       });
