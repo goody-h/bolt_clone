@@ -116,7 +116,8 @@ class HomeMain extends StatefulWidget {
   HomeMainState createState() => HomeMainState();
 }
 
-class HomeMainState extends State<HomeMain> with TickerProviderStateMixin {
+class HomeMainState extends State<HomeMain>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   AnimationController _iconController;
   AnimationController _controller;
 
@@ -150,6 +151,16 @@ class HomeMainState extends State<HomeMain> with TickerProviderStateMixin {
         setState(() {});
       });
     });
+
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print(state);
+    if (state == AppLifecycleState.resumed) {
+      setState(() {});
+    }
   }
 
   Completer<bool> hasInit = Completer();
@@ -159,6 +170,7 @@ class HomeMainState extends State<HomeMain> with TickerProviderStateMixin {
   void dispose() {
     _iconController.dispose();
     _controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -242,6 +254,7 @@ class HomeMainState extends State<HomeMain> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    print("render");
     return MultiBlocProvider(
       providers: [
         BlocProvider<TripBloc>(
