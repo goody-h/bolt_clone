@@ -9,6 +9,7 @@ import './screen.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/blocs.dart';
+import 'dart:math';
 
 class Home extends StatefulWidget {
   Home({Key key, this.mapDelay = const Duration(milliseconds: 400)})
@@ -186,10 +187,16 @@ class HomeMainState extends State<HomeMain>
   GoogleMapController mapController;
 
   // Method for retrieving the current location
-  _getCurrentLocation() async {
-    await _geolocator
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((Position position) async {
+  Future<Position> _getCurrentLocation() async {
+    final position = await _geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.bestForNavigation);
+    _currentPosition = position;
+    return position;
+  }
+
+  __animateToCurrentPosition() async {
+    try {
+      final position = await _getCurrentLocation();
       setState(() {
         // Store the position in the variable
         _currentPosition = position;
@@ -201,15 +208,79 @@ class HomeMainState extends State<HomeMain>
           CameraUpdate.newCameraPosition(
             CameraPosition(
               target: LatLng(position.latitude, position.longitude),
-              zoom: 14.0,
+              zoom: 17.2,
             ),
           ),
         );
       });
-    }).catchError((e) {
+    } catch (e) {
       print(e);
-    });
+    }
   }
+
+  _animateToCurrentPosition() async {
+    try {
+      Position otherPosition = Position(
+        latitude: 4.902008,
+        longitude: 7.005,
+      );
+      final position = await _getCurrentLocation();
+      setState(() {
+        print('FIT POS: $otherPosition');
+        // Define two position variables
+        Position _northeastCoordinates;
+        Position _southwestCoordinates;
+
+        // Calculating to check that
+        // southwest coordinate <= northeast coordinate
+        if (otherPosition.latitude <= position.latitude) {
+          _southwestCoordinates = otherPosition;
+          _northeastCoordinates = position;
+        } else {
+          _southwestCoordinates = position;
+          _northeastCoordinates = otherPosition;
+        }
+
+        mapController.animateCamera(
+          CameraUpdate.newLatLngBounds(
+            LatLngBounds(
+              northeast: LatLng(
+                _northeastCoordinates.latitude,
+                _northeastCoordinates.longitude,
+              ),
+              southwest: LatLng(
+                _southwestCoordinates.latitude,
+                _southwestCoordinates.longitude,
+              ),
+            ),
+            50.0, // padding
+          ),
+        );
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Set<Marker> markers = {
+    Marker(
+      markerId: MarkerId('vvvvvv'),
+      position: LatLng(
+        4.902008,
+        7.005,
+      ),
+      infoWindow: InfoWindow(
+        title: 'Destination',
+        snippet: "Destination Address",
+      ),
+      icon: BitmapDescriptor.defaultMarker,
+    )
+  };
+
+  final defaultZoom = 16.95;
+  final destinationZoom = 15;
+  final pickupZoom = 17;
+  final assigningZoom = 17.2;
 
   double _bottomInset = DefaultScreen.minHeight;
   double _animateInset = 0.4;
@@ -250,6 +321,8 @@ class HomeMainState extends State<HomeMain>
     widget.registerPop(callback);
   }
 
+  Set<Marker> _buildMarkers(BuildContext context, TripState state) {}
+
   BoolCallback onPopCallback;
 
   @override
@@ -267,24 +340,34 @@ class HomeMainState extends State<HomeMain>
       ],
       child: Stack(
         children: <Widget>[
-          loadMap.isCompleted
-              ? GoogleMap(
-                  initialCameraPosition: _initialLocation,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: false,
-                  mapType: MapType.normal,
-                  zoomGesturesEnabled: true,
-                  zoomControlsEnabled: false,
-                  onMapCreated: (GoogleMapController controller) {
-                    mapController = controller;
-                    _getCurrentLocation();
-                  },
-                  onCameraMove: (CameraPosition position) {},
-                  onCameraIdle: () {},
-                  padding:
-                      EdgeInsets.only(bottom: (_bottomInset) * _animateInset),
-                )
-              : Container(),
+          BlocBuilder<TripBloc, TripState>(
+            builder: (context, state) {
+              if (!loadMap.isCompleted) {
+                return Container();
+              }
+              final markers = _buildMarkers(context, state);
+
+              return GoogleMap(
+                initialCameraPosition: _initialLocation,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: false,
+                mapType: MapType.normal,
+                zoomGesturesEnabled: true,
+                zoomControlsEnabled: false,
+                onMapCreated: (GoogleMapController controller) {
+                  mapController = controller;
+                  _animateToCurrentPosition();
+                },
+                onCameraMove: (CameraPosition position) {
+                  // print(position.target);
+                },
+                onCameraIdle: () {},
+                padding:
+                    EdgeInsets.only(bottom: (_bottomInset) * _animateInset),
+                markers: markers != null ? Set<Marker>.from(markers) : null,
+              );
+            },
+          ),
           Positioned(
             top: 0,
             left: 0,
@@ -314,7 +397,7 @@ class HomeMainState extends State<HomeMain>
               child: FloatingActionButton(
                 heroTag: "location",
                 backgroundColor: Colors.white,
-                onPressed: _getCurrentLocation,
+                onPressed: _animateToCurrentPosition,
                 child: Icon(
                   Icons.my_location,
                   color: Colors.black,
@@ -332,5 +415,24 @@ class HomeMainState extends State<HomeMain>
         ],
       ),
     );
+  }
+}
+
+class HomeMainScreen extends InheritedWidget {
+  final Completer<GoogleMapController> controller;
+  HomeMainScreen({Widget child, this.controller}) : super(child: child);
+
+  setDefaultView() {}
+
+  setChooseDestinationView() {}
+
+  setCoosePickupView() {}
+
+  setDetailsView() {}
+
+  setReviewView() {}
+  @override
+  bool updateShouldNotify(InheritedWidget oldWidget) {
+    return true;
   }
 }
