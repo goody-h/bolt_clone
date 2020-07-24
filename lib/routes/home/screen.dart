@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen>
         case HomeState.DEFAULT:
           if (setstate)
             widget.setInset(
-                PickupScreen.minHeight, current != HomeState.PLAN_END, false);
+                DefaultScreen.minHeight, current != HomeState.PLAN_END, false);
           break;
         case HomeState.PICK:
           widget.setInset(DestinationScreen.minHeight, false, true);

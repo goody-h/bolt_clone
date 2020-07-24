@@ -122,9 +122,45 @@ class HomeMainState extends State<HomeMain>
   AnimationController _iconController;
   AnimationController _controller;
 
+  MenuButtonController menu;
+  InsetController inset;
+  CameraController camera;
+  LocationButtonController locationBtn;
+  MarkerController marker;
+  LocationController location;
+
   @override
   void initState() {
     super.initState();
+
+    menu = MenuButtonController(
+      controller: AnimationController(
+        vsync: this,
+        value: 0,
+        duration: Duration(milliseconds: 300),
+      ),
+      registerPop: widget.registerPop,
+    );
+
+    inset = InsetController(
+      controller: AnimationController(
+        vsync: this,
+        value: 0.4,
+        lowerBound: 0.4,
+        upperBound: 1,
+        duration: Duration(milliseconds: 300),
+      ),
+      hasInit: hasInit,
+    );
+
+    camera = CameraController(controller: mapController);
+
+    locationBtn = LocationButtonController();
+
+    marker = MarkerController();
+
+    location = LocationController();
+
     _iconController = AnimationController(
       vsync: this,
       value: 0,
@@ -184,7 +220,7 @@ class HomeMainState extends State<HomeMain>
   Position _currentPosition;
 
   // For controlling the view of the Map
-  GoogleMapController mapController;
+  Completer<GoogleMapController> mapController = Completer();
 
   // Method for retrieving the current location
   Future<Position> _getCurrentLocation() async {
@@ -195,6 +231,7 @@ class HomeMainState extends State<HomeMain>
   }
 
   __animateToCurrentPosition() async {
+    final map = await mapController.future;
     try {
       final position = await _getCurrentLocation();
       setState(() {
@@ -204,7 +241,7 @@ class HomeMainState extends State<HomeMain>
         print('CURRENT POS: $_currentPosition');
 
         // For moving the camera to current location
-        mapController.animateCamera(
+        map.animateCamera(
           CameraUpdate.newCameraPosition(
             CameraPosition(
               target: LatLng(position.latitude, position.longitude),
@@ -224,6 +261,8 @@ class HomeMainState extends State<HomeMain>
         latitude: 4.902008,
         longitude: 7.005,
       );
+      final map = await mapController.future;
+
       final position = await _getCurrentLocation();
       setState(() {
         print('FIT POS: $otherPosition');
@@ -241,7 +280,7 @@ class HomeMainState extends State<HomeMain>
           _northeastCoordinates = otherPosition;
         }
 
-        mapController.animateCamera(
+        map.animateCamera(
           CameraUpdate.newLatLngBounds(
             LatLngBounds(
               northeast: LatLng(
@@ -355,7 +394,7 @@ class HomeMainState extends State<HomeMain>
                 zoomGesturesEnabled: true,
                 zoomControlsEnabled: false,
                 onMapCreated: (GoogleMapController controller) {
-                  mapController = controller;
+                  mapController.complete(controller);
                   _animateToCurrentPosition();
                 },
                 onCameraMove: (CameraPosition position) {
@@ -407,10 +446,20 @@ class HomeMainState extends State<HomeMain>
               visible: !transferControl,
             ),
           ),
-          HomeScreen(
-            inset: _animateInset,
-            setInset: _setBottomInset,
-            registerOnPop: _registerPop,
+          HomeMainScreen(
+            child: HomeScreen(
+              inset: _animateInset,
+              setInset: _setBottomInset,
+              registerOnPop: _registerPop,
+            ),
+            context: context,
+            menu: menu,
+            inset: inset,
+            camera: camera,
+            locationBtn: locationBtn,
+            marker: marker,
+            location: location,
+            setState: () => setState(() {}),
           ),
         ],
       ),
@@ -418,11 +467,220 @@ class HomeMainState extends State<HomeMain>
   }
 }
 
-class HomeMainScreen extends InheritedWidget {
-  final Completer<GoogleMapController> controller;
-  HomeMainScreen({Widget child, this.controller}) : super(child: child);
+// microcontrollers
+class LocationButtonController {
+  bool isVisible = true;
+}
 
-  setDefaultView() {}
+class MenuButtonController {
+  AnimationController controller;
+  Function(BoolCallback) registerPop;
+  Function(BuildContext) onClick;
+  BoolCallback _onPopCallback;
+  bool _canPop = false;
+
+  MenuButtonController({this.controller, this.registerPop}) {
+    onClick = _openDrawer;
+  }
+
+  registerOnPop(BoolCallback onPop) {
+    _onPopCallback = onPop;
+    registerPop(onPop);
+  }
+
+  setCanPop(bool canPop) {
+    if (canPop != _canPop) {
+      _canPop = canPop;
+      onClick = _canPop && _onPopCallback != null
+          ? (context) => _onPopCallback()
+          : _openDrawer;
+      _canPop ? controller.forward() : controller.reverse();
+    }
+  }
+
+  _openDrawer(BuildContext context) => Scaffold.of(context).openDrawer();
+}
+
+class SelectionPinController {
+  bool isVisible = false;
+  bool isPinMoving = false;
+  bool isPickup;
+  LatLng position;
+  String pinAddress;
+
+  initPin({bool isPickup, LatLng position}) {
+    this.isPickup = isPickup;
+    this.position = position;
+  }
+
+  movePinPosition(LatLng position) {
+    this.position = position;
+  }
+
+  updatePinPosition(BuildContext context) {
+    // send event to TripBloc
+  }
+}
+
+class CameraController {
+  Completer<GoogleMapController> controller;
+  List<LatLng> positionVectors;
+  double zoom;
+
+  CameraController({this.controller});
+
+  justifyCamera({List<LatLng> positionVectors, double zoom}) async {
+    this.positionVectors = positionVectors ?? this.positionVectors;
+    this.zoom = zoom ?? this.zoom;
+    if (this.positionVectors == null ||
+        this.positionVectors.length == 0 ||
+        this.zoom == null) return;
+
+    final map = await controller.future;
+
+    final CameraUpdate update =
+        positionVectors.length > 1 ? _getBounds() : _getPosition();
+
+    map.animateCamera(update);
+  }
+
+  CameraUpdate _getPosition() {
+    return CameraUpdate.newCameraPosition(
+      CameraPosition(
+        target: positionVectors[0],
+        zoom: zoom,
+      ),
+    );
+  }
+
+  CameraUpdate _getBounds() {
+    final bounds = positionVectors.fold<List<double>>(
+      [
+        positionVectors[0].latitude, // max latitude
+        positionVectors[0].longitude, // max longitude
+        positionVectors[0].latitude, // min latitude
+        positionVectors[0].longitude // min longitude
+      ],
+      (previous, element) => [
+        max(previous[0], element.latitude),
+        max(previous[1], element.longitude),
+        min(previous[2], element.latitude),
+        min(previous[2], element.longitude)
+      ],
+    );
+
+    return CameraUpdate.newLatLngBounds(
+      LatLngBounds(
+        northeast: LatLng(
+          bounds[0],
+          bounds[1],
+        ),
+        southwest: LatLng(
+          bounds[2],
+          bounds[3],
+        ),
+      ),
+      50.0, // padding
+    );
+  }
+}
+
+class InsetController {
+  AnimationController controller;
+  double _baseBottomInset;
+  Completer<bool> hasInit;
+
+  InsetController({this.controller, this.hasInit});
+
+  double get inset => _baseBottomInset * controller.value;
+
+  setBaseInset(double inset, {bool shouldAnimate}) async {
+    await hasInit.future;
+    if (shouldAnimate) {
+      controller.value = 0.4;
+      controller.forward();
+    } else {
+      controller.value = 0.99;
+      controller.value = 1;
+    }
+  }
+}
+
+class MarkerController {
+  bool showDrivers;
+}
+
+class LocationController {
+  final Geolocator _geolocator = Geolocator();
+  Position _location;
+  LocationController() {
+    _geolocator
+        .getPositionStream(
+            LocationOptions(accuracy: LocationAccuracy.bestForNavigation))
+        .listen((position) {
+      _location = position;
+    });
+  }
+
+  Future<LatLng> get location async {
+    if (_location == null) {
+      _location = await _geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.bestForNavigation);
+    }
+    return LatLng(_location.latitude, _location.longitude);
+  }
+}
+
+class HomeMainScreen extends InheritedWidget {
+  HomeMainScreen({
+    Widget child,
+    this.context,
+    this.menu,
+    this.setState,
+    this.inset,
+    this.camera,
+    this.locationBtn,
+    this.marker,
+    this.location,
+  }) : super(child: child);
+
+  final BuildContext context;
+  final MenuButtonController menu;
+  final InsetController inset;
+  final VoidCallback setState;
+  final LocationButtonController locationBtn;
+  final CameraController camera;
+  final MarkerController marker;
+  final LocationController location;
+
+  TripBloc getTrip() => BlocProvider.of<TripBloc>(context);
+  UserBloc getUser() => BlocProvider.of<UserBloc>(context);
+
+  setDefaultView({bool isExpanded = false, bool isChanging = false}) async {
+    //(double inset, bool animate, bool hasControl)
+    if (!isExpanded) {
+      final myLocation = await location.location;
+      getTrip().add(TripRequestInit(myLocation));
+    }
+    if (!isChanging) {
+      menu.setCanPop(false);
+      locationBtn.isVisible = true;
+      inset.setBaseInset(250, shouldAnimate: !isExpanded);
+      marker.showDrivers = true;
+      setState();
+
+      final myLocation = await location.location;
+      final user = getUser().state;
+      final pVectors = [myLocation];
+
+      if (user is UserLoaded) {
+        pVectors.addAll([user.user.home, user.user.work]
+            .where((p) => p != null)
+            .map((p) => LatLng(p.latitude, p.longitude)));
+      }
+      camera.justifyCamera(positionVectors: pVectors, zoom: 16.95);
+    }
+  }
 
   setChooseDestinationView() {}
 
@@ -435,4 +693,7 @@ class HomeMainScreen extends InheritedWidget {
   bool updateShouldNotify(InheritedWidget oldWidget) {
     return true;
   }
+
+  static HomeMainScreen of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<HomeMainScreen>();
 }

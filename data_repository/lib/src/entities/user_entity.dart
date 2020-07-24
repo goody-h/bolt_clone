@@ -5,6 +5,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import '../models/card.dart';
+import '../models/position.dart';
 import 'dart:convert';
 
 class UserEntity extends Equatable {
@@ -14,16 +15,21 @@ class UserEntity extends Equatable {
   final String lastName;
   final String phoneNumber;
   final String paymentMethod;
+  final Position home;
+  final Position work;
   final Map<String, Card> cards;
 
-  const UserEntity(
-      {this.userId,
-      this.email,
-      this.firstName,
-      this.lastName,
-      this.phoneNumber,
-      this.paymentMethod,
-      this.cards});
+  const UserEntity({
+    this.userId,
+    this.email,
+    this.firstName,
+    this.lastName,
+    this.phoneNumber,
+    this.paymentMethod,
+    this.cards,
+    this.home,
+    this.work,
+  });
 
   Map<String, Object> toJson() {
     return {
@@ -33,13 +39,24 @@ class UserEntity extends Equatable {
       "lastname": lastName,
       "phoneNumber": phoneNumber,
       "paymentMethod": paymentMethod,
+      "home": home.toJson(),
+      "work": work.toJson(),
       "cards": cards.map((key, value) => MapEntry(key, value.toJson()))
     };
   }
 
   @override
-  List<Object> get props =>
-      [userId, email, firstName, lastName, phoneNumber, paymentMethod, cards];
+  List<Object> get props => [
+        userId,
+        email,
+        firstName,
+        lastName,
+        phoneNumber,
+        paymentMethod,
+        cards,
+        home,
+        work
+      ];
 
   @override
   String toString() {
@@ -53,6 +70,8 @@ class UserEntity extends Equatable {
       firstName: json["firstname"] as String,
       lastName: json["lastname"] as String,
       phoneNumber: json["phoneNumber"] as String,
+      home: Position.fromJson(json["home"] as Map<String, dynamic>),
+      work: Position.fromJson(json["work"] as Map<String, dynamic>),
       paymentMethod: json["paymentMethod"] as String,
       cards: (json["cards"] as Map<String, dynamic>)
           .map((key, card) => MapEntry(key, Card.fromJson(card))),
