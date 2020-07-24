@@ -64,13 +64,9 @@ class PickupScreen extends StatelessWidget {
                 color: Colors.white, //background color of box
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black,
-                    blurRadius: 20.0, // soften the shadow
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 2, // soften the shadow
                     spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      17.0, // Move to right 10  horizontally
-                      17.0, // Move to bottom 10 Vertically
-                    ),
                   )
                 ],
               ),
@@ -102,13 +98,9 @@ class PickupScreen extends StatelessWidget {
               color: Colors.white, //background color of box
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black,
-                  blurRadius: 20.0, // soften the shadow
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 2, // soften the shadow
                   spreadRadius: 1.0, //extend the shadow
-                  offset: Offset(
-                    -17.0, // Move to right 10  horizontally
-                    -17.0, // Move to bottom 10 Vertically
-                  ),
                 )
               ],
             ),

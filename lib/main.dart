@@ -1,19 +1,49 @@
+import 'package:bolt_clone/routes/splash/splash.dart';
 import 'package:flutter/material.dart';
-import './routes/home/home.dart';
+import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import './blocs/authentication_bloc/bloc.dart';
+import 'package:data_repository/data_repository.dart';
+import './blocs/blocs.dart';
+import 'package:user_repository/user_repository.dart';
 
 void main() {
-  runApp(MyApp());
+  Bloc.observer = SimpleBlocObserver();
+  runApp(BoltApp());
 }
 
-class MyApp extends StatelessWidget {
+class BoltApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Maps',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    final dataRepo = FirebaseDataRepository();
+
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<UserBloc>(
+          create: (context) {
+            return UserBloc(
+              dataRepository: dataRepo,
+            )..add(LoadUser());
+          },
+          lazy: false,
+        ),
+        BlocProvider<AuthenticationBloc>(
+          create: (context) {
+            return AuthenticationBloc(
+              userRepository: FirebaseUserRepository(),
+              dataRepository: dataRepo,
+            )..add(AppStarted());
+          },
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Bolt Clone',
+        routes: {
+          '/': (context) {
+            return Splash();
+          },
+        },
       ),
-      home: Home(),
     );
   }
 }

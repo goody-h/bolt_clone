@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models.dart';
-import '../../../models/invoice.dart';
-import '../../../models/user.dart';
-import '../../../services/payment.dart';
+import '../../../resources/payment.dart';
+
+import 'package:data_repository/data_repository.dart';
+
+import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/blocs.dart';
 
 // recover camera position from google camera
 class ReviewScreen extends StatelessWidget {
@@ -36,14 +40,10 @@ class ReviewScreen extends StatelessWidget {
           color: Colors.white, //background color of box
           boxShadow: [
             BoxShadow(
-              color: Colors.black,
-              blurRadius: 20.0, // soften the shadow
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 2, // soften the shadow
               spreadRadius: 1.0, //extend the shadow
-              offset: Offset(
-                17.0, // Move to right 10  horizontally
-                17.0, // Move to bottom 10 Vertically
-              ),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -67,11 +67,14 @@ class ReviewScreen extends StatelessWidget {
                   // Scaffold.of(context);
                   // Navigator.of(context).push(MaterialPageRoute(
                   //     builder: (BuildContext context) => HomePage()));
-                  var manager = PaymentManager(handleStatus: (m) {
+                  var manager = PaymentProvider(handleStatus: (m) {
                     _showMessage(context, m["message"]);
                   });
-
-                  await manager.checkout(context, Invoice(), User());
+                  final state = BlocProvider.of<UserBloc>(context).state;
+                  print(state);
+                  if (state is UserLoaded) {
+                    await manager.checkout(context, Invoice(), state.user);
+                  }
                 }
               },
             ),
