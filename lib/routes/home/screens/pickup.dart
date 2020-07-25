@@ -6,7 +6,6 @@ class PickupScreen extends StatelessWidget {
   PickupScreen({
     Key key,
     this.gestureHandler,
-    this.inset,
     this.maxHeight,
     this.isPickup = false,
     this.actionCallback,
@@ -15,7 +14,6 @@ class PickupScreen extends StatelessWidget {
   final bool isPickup;
   final GestureHandler gestureHandler;
   final HomeStateHandler actionCallback;
-  final double inset;
   final double maxHeight;
 
   static final double minHeight = 250;
@@ -43,9 +41,8 @@ class PickupScreen extends StatelessWidget {
           ignoring: isPickup || gestureHandler.controller.value == 0,
         ),
         Positioned(
-          height: !isPickup
-              ? gestureHandler.lerp(minHeight, maxHeight) * inset
-              : maxHeight,
+          height:
+              !isPickup ? gestureHandler.lerp(minHeight, maxHeight) : maxHeight,
           left: 0,
           right: 0,
           bottom: 0,

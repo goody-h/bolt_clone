@@ -30,6 +30,7 @@ class TripBloc extends Bloc<TripEvent, TripState> {
               ? add(ActiveTripUpdated(trip))
               : add(InactiveTrip()),
         );
+    _dataRepository.seedStream("trip");
   }
 
   Stream<TripState> _mapTripUpdateToState(ActiveTripUpdated event) async* {

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
+import 'package:bolt_clone/routes/home/screens/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -80,6 +81,7 @@ class HomeScaffold extends StatelessWidget {
           child: drawer,
         ),
         drawerEnableOpenDragGesture: false,
+        resizeToAvoidBottomInset: false,
         body: child,
       ),
     );
@@ -119,20 +121,22 @@ class HomeMain extends StatefulWidget {
 
 class HomeMainState extends State<HomeMain>
     with TickerProviderStateMixin, WidgetsBindingObserver {
-  AnimationController _iconController;
-  AnimationController _controller;
-
+  TripBloc trip;
   MenuButtonController menu;
   InsetController inset;
   CameraController camera;
   LocationButtonController locationBtn;
   MarkerController marker;
   LocationController location;
+  SelectionPinController pin;
+  RouteController route;
 
   @override
   void initState() {
     super.initState();
-
+    trip = TripBloc(
+      dataRepository: BlocProvider.of<UserBloc>(context).dataRepository,
+    );
     menu = MenuButtonController(
       controller: AnimationController(
         vsync: this,
@@ -161,25 +165,9 @@ class HomeMainState extends State<HomeMain>
 
     location = LocationController();
 
-    _iconController = AnimationController(
-      vsync: this,
-      value: 0,
-      duration: Duration(milliseconds: 300),
-    );
+    pin = SelectionPinController();
 
-    _controller = AnimationController(
-      vsync: this,
-      value: 0.4,
-      lowerBound: 0.4,
-      upperBound: 1,
-      duration: Duration(milliseconds: 300),
-    );
-
-    _controller.addListener(() {
-      setState(() {
-        _animateInset = _controller.value;
-      });
-    });
+    route = RouteController(trip: trip);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       hasInit.complete(true);
@@ -205,8 +193,8 @@ class HomeMainState extends State<HomeMain>
 
   @override
   void dispose() {
-    _iconController.dispose();
-    _controller.dispose();
+    inset.dispose();
+    menu.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -215,154 +203,12 @@ class HomeMainState extends State<HomeMain>
   CameraPosition _initialLocation =
       CameraPosition(target: LatLng(0.0, 0.0), zoom: 10);
 
-  final Geolocator _geolocator = Geolocator();
-  // For storing the current position
-  Position _currentPosition;
-
-  // For controlling the view of the Map
   Completer<GoogleMapController> mapController = Completer();
 
-  // Method for retrieving the current location
-  Future<Position> _getCurrentLocation() async {
-    final position = await _geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.bestForNavigation);
-    _currentPosition = position;
-    return position;
-  }
-
-  __animateToCurrentPosition() async {
-    final map = await mapController.future;
-    try {
-      final position = await _getCurrentLocation();
-      setState(() {
-        // Store the position in the variable
-        _currentPosition = position;
-
-        print('CURRENT POS: $_currentPosition');
-
-        // For moving the camera to current location
-        map.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(position.latitude, position.longitude),
-              zoom: 17.2,
-            ),
-          ),
-        );
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  _animateToCurrentPosition() async {
-    try {
-      Position otherPosition = Position(
-        latitude: 4.902008,
-        longitude: 7.005,
-      );
-      final map = await mapController.future;
-
-      final position = await _getCurrentLocation();
-      setState(() {
-        print('FIT POS: $otherPosition');
-        // Define two position variables
-        Position _northeastCoordinates;
-        Position _southwestCoordinates;
-
-        // Calculating to check that
-        // southwest coordinate <= northeast coordinate
-        if (otherPosition.latitude <= position.latitude) {
-          _southwestCoordinates = otherPosition;
-          _northeastCoordinates = position;
-        } else {
-          _southwestCoordinates = position;
-          _northeastCoordinates = otherPosition;
-        }
-
-        map.animateCamera(
-          CameraUpdate.newLatLngBounds(
-            LatLngBounds(
-              northeast: LatLng(
-                _northeastCoordinates.latitude,
-                _northeastCoordinates.longitude,
-              ),
-              southwest: LatLng(
-                _southwestCoordinates.latitude,
-                _southwestCoordinates.longitude,
-              ),
-            ),
-            50.0, // padding
-          ),
-        );
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Set<Marker> markers = {
-    Marker(
-      markerId: MarkerId('vvvvvv'),
-      position: LatLng(
-        4.902008,
-        7.005,
-      ),
-      infoWindow: InfoWindow(
-        title: 'Destination',
-        snippet: "Destination Address",
-      ),
-      icon: BitmapDescriptor.defaultMarker,
-    )
-  };
-
-  final defaultZoom = 16.95;
-  final destinationZoom = 15;
-  final pickupZoom = 17;
-  final assigningZoom = 17.2;
-
-  double _bottomInset = DefaultScreen.minHeight;
-  double _animateInset = 0.4;
-  bool transferControl = false;
-
-  _openDrawer(BuildContext context) {
-    Scaffold.of(context).openDrawer();
-  }
-
-  _setBottomInset(double inset, bool animate, bool hasControl) async {
-    _bottomInset = inset;
-
-    await hasInit.future;
-
-    if (hasControl != transferControl) {
-      transferControl = hasControl;
-      if (transferControl)
-        _iconController.forward();
-      else
-        _iconController.reverse();
-    }
-
-    if (animate) {
-      _controller.value = 0.4;
-      _controller.forward();
-    } else {
-      _controller.value = 1;
-    }
-  }
-
-  _handleActionButton(BuildContext context) {
-    if (transferControl) return onPopCallback();
-    _openDrawer(context);
-  }
-
-  _registerPop(BoolCallback callback) {
-    onPopCallback = callback;
-    widget.registerPop(callback);
-  }
-
-  Set<Marker> _buildMarkers(BuildContext context, TripState state) {}
-
-  BoolCallback onPopCallback;
+  final pos = Position(
+    latitude: 4.902008,
+    longitude: 7.005,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -371,9 +217,7 @@ class HomeMainState extends State<HomeMain>
       providers: [
         BlocProvider<TripBloc>(
           create: (context) {
-            return TripBloc(
-              dataRepository: BlocProvider.of<UserBloc>(context).dataRepository,
-            )..add(LoadTrip());
+            return trip..add(LoadTrip());
           },
         ),
       ],
@@ -384,27 +228,47 @@ class HomeMainState extends State<HomeMain>
               if (!loadMap.isCompleted) {
                 return Container();
               }
-              final markers = _buildMarkers(context, state);
+              final markers = marker.getMarkers(context, state);
 
-              return GoogleMap(
-                initialCameraPosition: _initialLocation,
-                myLocationEnabled: true,
-                myLocationButtonEnabled: false,
-                mapType: MapType.normal,
-                zoomGesturesEnabled: true,
-                zoomControlsEnabled: false,
-                onMapCreated: (GoogleMapController controller) {
-                  mapController.complete(controller);
-                  _animateToCurrentPosition();
-                },
-                onCameraMove: (CameraPosition position) {
-                  // print(position.target);
-                },
-                onCameraIdle: () {},
-                padding:
-                    EdgeInsets.only(bottom: (_bottomInset) * _animateInset),
-                markers: markers != null ? Set<Marker>.from(markers) : null,
-              );
+              final polylines = route.getRoute();
+
+              return StreamBuilder<double>(
+                  initialData: inset._baseBottomInset,
+                  stream: inset.stream,
+                  builder: (context, data) {
+                    return GoogleMap(
+                      initialCameraPosition: _initialLocation,
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: false,
+                      mapType: MapType.normal,
+                      zoomGesturesEnabled: true,
+                      zoomControlsEnabled: false,
+                      onMapCreated: (GoogleMapController controller) async {
+                        mapController.complete(controller);
+                        try {
+                          final List<LatLng> positions =
+                              camera.positionVectors ??
+                                  [await location.location];
+                          camera.justifyCamera(
+                              positionVectors: positions, zoom: 16.95);
+                        } catch (e) {
+                          print(e);
+                        }
+                      },
+                      onCameraMove: (CameraPosition position) {
+                        pin.movePinPosition(position.target);
+                      },
+                      onCameraIdle: () {
+                        pin.updatePinPosition(context);
+                      },
+                      padding: EdgeInsets.only(bottom: inset._baseBottomInset),
+                      markers:
+                          markers != null ? Set<Marker>.from(markers) : null,
+                      polylines: polylines != null
+                          ? Set<Polyline>.from(polylines)
+                          : null,
+                    );
+                  });
             },
           ),
           Positioned(
@@ -418,10 +282,10 @@ class HomeMainState extends State<HomeMain>
                   origin: Offset(0, 0),
                   child: FloatingActionButton(
                     backgroundColor: Colors.white,
-                    onPressed: () => _handleActionButton(context),
+                    onPressed: () => menu.onClick(context),
                     child: AnimatedIcon(
                       icon: AnimatedIcons.menu_arrow,
-                      progress: _iconController,
+                      progress: menu.controller,
                       color: Colors.black,
                     ),
                   ),
@@ -429,36 +293,44 @@ class HomeMainState extends State<HomeMain>
               ),
             ),
           ),
-          Positioned(
-            bottom: 15 + _bottomInset * _animateInset,
-            right: 15,
-            child: Visibility(
-              child: FloatingActionButton(
-                heroTag: "location",
-                backgroundColor: Colors.white,
-                onPressed: _animateToCurrentPosition,
-                child: Icon(
-                  Icons.my_location,
-                  color: Colors.black,
-                ),
-                mini: true,
-              ),
-              visible: !transferControl,
-            ),
+          AnimatedBuilder(
+            animation: inset.controller,
+            builder: (context, child) {
+              return Stack(
+                children: <Widget>[
+                  Positioned(
+                    bottom: 15 + inset.inset,
+                    right: 15,
+                    child: Visibility(
+                      child: FloatingActionButton(
+                        heroTag: "location",
+                        backgroundColor: Colors.white,
+                        onPressed: camera.justifyCamera,
+                        child: Icon(
+                          Icons.my_location,
+                          color: Colors.black,
+                        ),
+                        mini: true,
+                      ),
+                      visible: locationBtn.isVisible,
+                    ),
+                  )
+                ],
+              );
+            },
           ),
           HomeMainScreen(
-            child: HomeScreen(
-              inset: _animateInset,
-              setInset: _setBottomInset,
-              registerOnPop: _registerPop,
-            ),
+            child: HomeScreen(),
             context: context,
+            trip: trip,
             menu: menu,
             inset: inset,
             camera: camera,
             locationBtn: locationBtn,
             marker: marker,
             location: location,
+            pin: pin,
+            route: route,
             setState: () => setState(() {}),
           ),
         ],
@@ -481,6 +353,10 @@ class MenuButtonController {
 
   MenuButtonController({this.controller, this.registerPop}) {
     onClick = _openDrawer;
+  }
+
+  dispose() {
+    controller.dispose();
   }
 
   registerOnPop(BoolCallback onPop) {
@@ -506,20 +382,41 @@ class SelectionPinController {
   bool isPinMoving = false;
   bool isPickup;
   LatLng position;
+  LatLng _positionHolder;
   String pinAddress;
 
   initPin({bool isPickup, LatLng position}) {
     this.isPickup = isPickup;
+    this.isVisible = true;
     this.position = position;
+    _positionToAddress();
+  }
+
+  disable() {
+    isVisible = false;
+    pinAddress = null;
+    position = null;
+    _positionHolder = null;
   }
 
   movePinPosition(LatLng position) {
-    this.position = position;
+    print("move pin $position");
+    if (isVisible) {
+      this._positionHolder = position;
+    }
   }
 
   updatePinPosition(BuildContext context) {
-    // send event to TripBloc
+    print("set pin $position");
+    if (isVisible) {
+      if (position != _positionHolder) {
+        // send event to TripBloc
+        _positionToAddress();
+      }
+    }
   }
+
+  _positionToAddress() {}
 }
 
 class CameraController {
@@ -532,6 +429,8 @@ class CameraController {
   justifyCamera({List<LatLng> positionVectors, double zoom}) async {
     this.positionVectors = positionVectors ?? this.positionVectors;
     this.zoom = zoom ?? this.zoom;
+
+    print(this.positionVectors);
     if (this.positionVectors == null ||
         this.positionVectors.length == 0 ||
         this.zoom == null) return;
@@ -539,7 +438,7 @@ class CameraController {
     final map = await controller.future;
 
     final CameraUpdate update =
-        positionVectors.length > 1 ? _getBounds() : _getPosition();
+        (this.positionVectors?.length ?? 0) > 1 ? _getBounds() : _getPosition();
 
     map.animateCamera(update);
   }
@@ -565,9 +464,11 @@ class CameraController {
         max(previous[0], element.latitude),
         max(previous[1], element.longitude),
         min(previous[2], element.latitude),
-        min(previous[2], element.longitude)
+        min(previous[3], element.longitude)
       ],
     );
+
+    print("bounds $bounds");
 
     return CameraUpdate.newLatLngBounds(
       LatLngBounds(
@@ -587,15 +488,20 @@ class CameraController {
 
 class InsetController {
   AnimationController controller;
-  double _baseBottomInset;
+  final streamController = StreamController<double>.broadcast();
+  double _baseBottomInset = DefaultScreen.minHeight;
   Completer<bool> hasInit;
 
   InsetController({this.controller, this.hasInit});
 
   double get inset => _baseBottomInset * controller.value;
 
+  Stream<double> get stream => streamController.stream;
+
   setBaseInset(double inset, {bool shouldAnimate}) async {
+    this._baseBottomInset = inset;
     await hasInit.future;
+    streamController.sink.add(inset);
     if (shouldAnimate) {
       controller.value = 0.4;
       controller.forward();
@@ -604,10 +510,71 @@ class InsetController {
       controller.value = 1;
     }
   }
+
+  dispose() {
+    controller.dispose();
+    streamController.close();
+  }
 }
 
 class MarkerController {
-  bool showDrivers;
+  bool showDrivers = true;
+  bool showPickupAndDestination = false;
+  bool showHomeAndWork = true;
+
+  Set<Marker> getMarkers(BuildContext context, TripState state) {
+    // get marker
+    final user = BlocProvider.of<UserBloc>(context).state;
+    Set<Marker> markers;
+
+    if (user is UserLoaded && showHomeAndWork) {
+      markers = Set<Marker>();
+      markers.addAll([user.user.home, user.user.work]
+          .where((p) => p != null)
+          .map((p) => LatLng(p.latitude, p.longitude))
+          .map((pos) => marker(pos)));
+    }
+
+    return markers;
+  }
+
+  Marker marker(LatLng pos) {
+    return Marker(
+      markerId: MarkerId('vvvvvv'),
+      position: pos,
+      infoWindow: InfoWindow(
+        title: 'Destination',
+        snippet: "Destination Address",
+      ),
+      icon: BitmapDescriptor.defaultMarker,
+    );
+  }
+}
+
+class RouteController {
+  TripBloc trip;
+  bool isVisible = false;
+
+  RouteController({this.trip}) {
+    trip.asBroadcastStream().listen((state) async {
+      if (state is TripRequest &&
+          state.request.destination != null &&
+          state.request.pickUp != null &&
+          state.request.distance == null) {
+        // calculate distance
+      }
+    });
+  }
+
+  _plotTrip() {}
+
+  _calculateDistance() {}
+
+  _setDistance() {}
+
+  Set<Polyline> getRoute() {
+    return null;
+  }
 }
 
 class LocationController {
@@ -615,10 +582,11 @@ class LocationController {
   Position _location;
   LocationController() {
     _geolocator
-        .getPositionStream(
-            LocationOptions(accuracy: LocationAccuracy.bestForNavigation))
+        .getPositionStream(LocationOptions(
+            accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 100))
         .listen((position) {
       _location = position;
+      print("location update $_location");
     });
   }
 
@@ -626,6 +594,7 @@ class LocationController {
     if (_location == null) {
       _location = await _geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.bestForNavigation);
+      print("location $_location");
     }
     return LatLng(_location.latitude, _location.longitude);
   }
@@ -634,6 +603,7 @@ class LocationController {
 class HomeMainScreen extends InheritedWidget {
   HomeMainScreen({
     Widget child,
+    this.trip,
     this.context,
     this.menu,
     this.setState,
@@ -642,8 +612,11 @@ class HomeMainScreen extends InheritedWidget {
     this.locationBtn,
     this.marker,
     this.location,
+    this.pin,
+    this.route,
   }) : super(child: child);
 
+  final TripBloc trip;
   final BuildContext context;
   final MenuButtonController menu;
   final InsetController inset;
@@ -652,12 +625,18 @@ class HomeMainScreen extends InheritedWidget {
   final CameraController camera;
   final MarkerController marker;
   final LocationController location;
+  final SelectionPinController pin;
+  final RouteController route;
 
-  TripBloc getTrip() => BlocProvider.of<TripBloc>(context);
+  TripBloc getTrip() => trip;
   UserBloc getUser() => BlocProvider.of<UserBloc>(context);
 
+  final defaultZoom = 16.95;
+  final destinationZoom = 15.0;
+  final pickupZoom = 17.0;
+  final assigningZoom = 17.2;
+
   setDefaultView({bool isExpanded = false, bool isChanging = false}) async {
-    //(double inset, bool animate, bool hasControl)
     if (!isExpanded) {
       final myLocation = await location.location;
       getTrip().add(TripRequestInit(myLocation));
@@ -665,8 +644,13 @@ class HomeMainScreen extends InheritedWidget {
     if (!isChanging) {
       menu.setCanPop(false);
       locationBtn.isVisible = true;
-      inset.setBaseInset(250, shouldAnimate: !isExpanded);
+      inset.setBaseInset(DefaultScreen.minHeight, shouldAnimate: !isExpanded);
       marker.showDrivers = true;
+      marker.showHomeAndWork = true;
+      marker.showPickupAndDestination = false;
+      // more marker update
+      pin.disable();
+      route.isVisible = false;
       setState();
 
       final myLocation = await location.location;
@@ -678,17 +662,103 @@ class HomeMainScreen extends InheritedWidget {
             .where((p) => p != null)
             .map((p) => LatLng(p.latitude, p.longitude)));
       }
-      camera.justifyCamera(positionVectors: pVectors, zoom: 16.95);
+      camera.justifyCamera(positionVectors: pVectors, zoom: defaultZoom);
     }
   }
 
-  setChooseDestinationView() {}
+  setChooseDestinationView() async {
+    final myLocation = await location.location;
 
-  setCoosePickupView() {}
+    menu.setCanPop(true);
+    locationBtn.isVisible = false;
+    inset.setBaseInset(DestinationScreen.minHeight, shouldAnimate: false);
+    marker.showDrivers = false;
+    marker.showHomeAndWork = false;
+    marker.showPickupAndDestination = false;
+    // more marker update
 
-  setDetailsView() {}
+    pin.initPin(isPickup: false, position: myLocation);
+    route.isVisible = false;
+    setState();
 
-  setReviewView() {}
+    final pVectors = [myLocation];
+
+    camera.justifyCamera(positionVectors: pVectors, zoom: destinationZoom);
+  }
+
+  setCoosePickupView() async {
+    final myLocation = await location.location;
+    // possibly shift location slightly
+
+    menu.setCanPop(true);
+    locationBtn.isVisible = true;
+    inset.setBaseInset(PickupScreen.minHeight, shouldAnimate: false);
+    marker.showDrivers = false;
+    marker.showHomeAndWork = false;
+    marker.showPickupAndDestination = false;
+    // more marker update
+
+    pin.initPin(isPickup: true, position: myLocation);
+    route.isVisible = false;
+    setState();
+
+    final pVectors = [myLocation];
+
+    camera.justifyCamera(positionVectors: pVectors, zoom: pickupZoom);
+  }
+
+  setDetailsView({bool isChanging = false}) async {
+    if (!isChanging) {
+      menu.setCanPop(true);
+      locationBtn.isVisible = false;
+      inset.setBaseInset(DetailsScreen.minHeight, shouldAnimate: true);
+      marker.showDrivers = true;
+      marker.showHomeAndWork = false;
+      marker.showPickupAndDestination = true;
+      // more marker update
+      pin.disable();
+      route.isVisible = true;
+      setState();
+
+      final myLocation = await location.location;
+      final trip = getTrip().state;
+      final pVectors = [myLocation];
+
+      if (trip is TripRequest) {
+        pVectors.addAll([trip.request.destination, trip.request.pickUp]
+            .where((p) => p != null)
+            .map((p) => LatLng(p.latitude, p.longitude)));
+      }
+      camera.justifyCamera(positionVectors: pVectors, zoom: 15.0);
+    }
+  }
+
+  setReviewView() async {
+    final trip = getTrip().state;
+    var position = await location.location;
+    if (trip is TripRequest) {
+      final pickupLocation = trip.request.pickUp;
+      position = LatLng(pickupLocation.latitude, pickupLocation.longitude);
+    }
+    // possibly shift location slightly
+
+    menu.setCanPop(true);
+    locationBtn.isVisible = true;
+    inset.setBaseInset(ReviewScreen.minHeight, shouldAnimate: true);
+    marker.showDrivers = false;
+    marker.showHomeAndWork = false;
+    marker.showPickupAndDestination = false;
+    // more marker update
+
+    pin.initPin(isPickup: true, position: position);
+    route.isVisible = false;
+    setState();
+
+    final pVectors = [position];
+
+    camera.justifyCamera(positionVectors: pVectors, zoom: pickupZoom);
+  }
+
   @override
   bool updateShouldNotify(InheritedWidget oldWidget) {
     return true;

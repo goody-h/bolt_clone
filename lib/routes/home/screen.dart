@@ -1,20 +1,13 @@
+import 'package:bolt_clone/routes/home/home.dart';
 import 'package:flutter/material.dart';
 import './models.dart';
-import './screens/default.dart';
-import './screens/destination.dart';
-import './screens/details.dart';
-import './screens/pickup.dart';
-import './screens/review.dart';
+import './screens/screens.dart';
 import './utils.dart';
 
 export './screens/default.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({Key key, this.inset, this.setInset, this.registerOnPop})
-      : super(key: key);
-  final double inset;
-  final InsetHandler setInset;
-  final PopStackHandler registerOnPop;
+  HomeScreen({Key key}) : super(key: key);
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -33,8 +26,10 @@ class _HomeScreenState extends State<HomeScreen>
       value: 0,
       duration: Duration(milliseconds: 600),
     );
-    widget.registerOnPop(_onPop);
-    _showAction(action: HomeState.DEFAULT);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      HomeMainScreen.of(context).menu.registerOnPop(_onPop);
+      _showAction(action: HomeState.DEFAULT);
+    });
   }
 
   bool _onPop() {
@@ -48,34 +43,37 @@ class _HomeScreenState extends State<HomeScreen>
     bool pop = false,
     bool setstate = true,
   }) {
+    final home = HomeMainScreen.of(context);
     if (pop) {
       HomeState current = this.action ?? HomeState.DEFAULT;
 
       switch (current) {
         case HomeState.PLAN_END:
           this.action = HomeState.DEFAULT;
+          home.setDefaultView(isChanging: true);
           _controller.reverse();
           break;
         case HomeState.PICK:
           this.action = HomeState.PLAN_END;
-          widget.setInset(DefaultScreen.minHeight, false, false);
+          home.setDefaultView(isExpanded: true);
           _controller.forward();
           break;
         case HomeState.RIDE:
           this.action = HomeState.DEFAULT;
-          widget.setInset(DefaultScreen.minHeight, true, false);
+          home.setDefaultView();
           break;
         case HomeState.RIDE_DETAILS:
           this.action = HomeState.RIDE;
+          home.setDetailsView(isChanging: true);
           _controller.reverse();
           break;
         case HomeState.CONFIRM:
           this.action = HomeState.RIDE;
-          widget.setInset(DetailsScreen.minHeight, true, true);
+          home.setDetailsView();
           break;
         case HomeState.PLAN_START:
           this.action = HomeState.CONFIRM;
-          widget.setInset(DestinationScreen.minHeight, true, true);
+          home.setReviewView();
           break;
         default:
       }
@@ -85,24 +83,22 @@ class _HomeScreenState extends State<HomeScreen>
       this.action = action;
       switch (action) {
         case HomeState.DEFAULT:
-          if (setstate)
-            widget.setInset(
-                DefaultScreen.minHeight, current != HomeState.PLAN_END, false);
+          home.setDefaultView(isChanging: current == HomeState.PLAN_END);
           break;
         case HomeState.PICK:
-          widget.setInset(DestinationScreen.minHeight, false, true);
+          home.setChooseDestinationView();
+          break;
+        case HomeState.PLAN_END:
+          home.setDefaultView(isExpanded: true);
           break;
         case HomeState.RIDE:
           if (current == HomeState.PLAN_END || current == HomeState.PICK) {
             _controller.value = 0;
           }
-
-          if (setstate)
-            widget.setInset(DetailsScreen.minHeight,
-                current != HomeState.RIDE_DETAILS, true);
+          home.setDetailsView(isChanging: current == HomeState.RIDE_DETAILS);
           break;
         case HomeState.CONFIRM:
-          widget.setInset(DestinationScreen.minHeight, true, true);
+          home.setReviewView();
           break;
         case HomeState.PLAN_START:
           break;
@@ -134,7 +130,6 @@ class _HomeScreenState extends State<HomeScreen>
                 controller: _controller,
                 maxBound: maxHeight,
               ),
-              inset: widget.inset,
               maxHeight: maxHeight,
               actionCallback: (action, setstate) {
                 _showAction(
@@ -161,7 +156,6 @@ class _HomeScreenState extends State<HomeScreen>
                 controller: _controller,
                 maxBound: maxHeight - 120,
               ),
-              inset: widget.inset,
               maxHeight: maxHeight - 120,
               actionCallback: (action, setstate) {
                 _showAction(
@@ -173,7 +167,6 @@ class _HomeScreenState extends State<HomeScreen>
           case HomeState.CONFIRM:
             // set ride display
             return ReviewScreen(
-              insets: widget.inset,
               isPickup: true,
               actionCallback: (action, setstate) {
                 _showAction(
