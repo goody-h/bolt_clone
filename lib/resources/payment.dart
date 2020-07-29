@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart' as http;
 
-import './models/invoice.dart';
-import './models/user.dart';
+import 'package:data_repository/data_repository.dart';
 
 // String backendUrl = 'https://bolt-paystack.herokuapp.com';
 // String backendUrl = 'https://bold-prod.herokuapp.com';
@@ -20,8 +19,8 @@ const String appName = 'Bolt clone';
 
 typedef StatusCallback = void Function(Map<String, dynamic>);
 
-class PaymentManager {
-  PaymentManager({this.handleStatus}) {
+class PaymentProvider {
+  PaymentProvider({this.handleStatus}) {
     PaystackPlugin.initialize(publicKey: paystackPublicKey);
   }
   StatusCallback handleStatus;
@@ -32,7 +31,7 @@ class PaymentManager {
     var invoice = await post(
       url: url,
       body: {
-        "requests": requests.map((req) => req.toMap()).toList(),
+        "requests": requests.map((req) => req.toJson()).toList(),
       },
       dataCheck: ["invoices"],
     );
@@ -40,7 +39,7 @@ class PaymentManager {
     if (invoice["status"] == 0) {
       Iterable<dynamic> invoices =
           invoice["data"]["invoices"] as Iterable<dynamic>;
-      return invoices.map((invoice) => Invoice.fromMap(invoice)).toList();
+      return invoices.map((invoice) => Invoice.fromJson(invoice)).toList();
     } else {
       return [];
     }
@@ -70,12 +69,12 @@ class PaymentManager {
         context,
         method: CheckoutMethod.card,
         charge: charge,
-        fullscreen: false,
+        fullscreen: true,
         logo: MyLogo(),
       );
       print('Response = $response');
       String ref = response.reference;
-      _showMessage("Checking transaction state, ref: $ref");
+      _showMessage("Checking transaction state");
 
       var result = await (invoice != null
           ? verifyAndAuthorizeRide(
@@ -145,7 +144,7 @@ class PaymentManager {
     var charge = await post(
       url: url,
       body: {
-        "user": user.toMap(),
+        "user": user.toEntity().toJson(),
       },
       dataCheck: ["code", "charge"],
       extraCheck: ["ref"],
@@ -160,9 +159,9 @@ class PaymentManager {
     var charge = await post(
       url: url,
       body: {
-        "invoice": invoice.toMap(),
+        "invoice": invoice.toJson(),
         "signature": invoice.signature,
-        "user": user.toMap(),
+        "user": user.toEntity().toJson(),
       },
       dataCheck: ["code"],
       extraCheck: ["ref"],
@@ -188,9 +187,9 @@ class PaymentManager {
     var ride = await post(
       url: url,
       body: {
-        "invoice": invoice.toMap(),
+        "invoice": invoice.toJson(),
         "signature": invoice.signature,
-        "user": user.toMap(),
+        "user": user.toEntity().toJson(),
       },
       dataCheck: ["rideId"],
     );
@@ -204,10 +203,10 @@ class PaymentManager {
     var ride = await post(
       url: url,
       body: {
-        "invoice": invoice.toMap(),
+        "invoice": invoice.toJson(),
         "signature": invoice.signature,
-        "user": user.toMap(),
-        "authCode": user.activeCardCode,
+        "user": user.toEntity().toJson(),
+        "authCode": user.cards[user.paymentMethod].authCode,
       },
       dataCheck: ["rideId"],
     );

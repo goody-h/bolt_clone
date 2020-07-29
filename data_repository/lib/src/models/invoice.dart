@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import './place.dart';
+import 'position.dart';
 
 enum PaymentMethod { cash, card, newcard }
 
@@ -23,21 +23,21 @@ class Invoice extends InvoiceData {
         "BOLT_XXXXXXXXXXXX_${Timestamp.now().millisecondsSinceEpoch}_Lite";
     print(id);
   }
-  Invoice.fromMap(Map<String, dynamic> invoice)
+  Invoice.fromJson(Map<String, dynamic> invoice)
       : amount = invoice["amount"],
         signature = invoice["signature"],
         id = invoice["id"],
         pickupTime = invoice["pickupTime"],
         currency = invoice["currency"],
-        super.fromMap(invoice);
+        super.fromJson(invoice);
   int amount;
   String signature;
   String id;
   String pickupTime;
   String currency;
 
-  Map<String, dynamic> toMap() {
-    return super.toMap()
+  Map<String, dynamic> toJson() {
+    return super.toJson()
       ..addAll({
         "amount": amount,
         "pickupTime": pickupTime,
@@ -51,36 +51,36 @@ class Invoice extends InvoiceData {
 class InvoiceData {
   InvoiceData({
     this.tier,
-    this.pickUp = const Place(),
-    this.destination = const Place(),
+    this.pickUp = const Position(),
+    this.destination = const Position(),
     this.distance,
     this.time,
     this.method = PaymentMethod.newcard,
   });
 
-  InvoiceData.fromMap(Map<String, dynamic> data)
+  InvoiceData.fromJson(Map<String, dynamic> data)
       : this(
             tier: data["tier"],
-            pickUp: Place.fromMap(data["pickup"]),
-            destination: Place.fromMap(data["destination"]),
+            pickUp: Position.fromJson(data["pickup"]),
+            destination: Position.fromJson(data["destination"]),
             distance: data["distance"],
             time: data["time"],
             method: paymentMethodFromString(data["method"]));
 
   String tier;
-  Place pickUp;
-  Place destination;
+  Position pickUp;
+  Position destination;
   double distance;
   int time;
   PaymentMethod method;
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       "tier": tier,
       "method": method.toString().split('.')[1],
       "distance": distance,
-      "destination": destination.toMap(),
-      "pickup": pickUp.toMap(),
+      "destination": destination.toJson(),
+      "pickup": pickUp.toJson(),
       "time": time
     };
   }
