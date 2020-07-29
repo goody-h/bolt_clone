@@ -221,15 +221,6 @@ class HomeMainState extends State<HomeMain>
                       zoomControlsEnabled: false,
                       onMapCreated: (GoogleMapController controller) async {
                         mapController.complete(controller);
-                        try {
-                          final List<LatLng> positions =
-                              camera.positionVectors ??
-                                  [await location.location];
-                          camera.justifyCamera(
-                              positionVectors: positions, zoom: 16.95);
-                        } catch (e) {
-                          print(e);
-                        }
                       },
                       onCameraMove: (CameraPosition position) {
                         pin.movePinPosition(position.target);
@@ -397,7 +388,8 @@ class SelectionPinController {
 
 class CameraController {
   Completer<GoogleMapController> controller;
-  List<LatLng> positionVectors;
+  List<LatLng> positionVectors = [LatLng(0.0, 0.0)];
+  bool hasLayout = false;
   double zoom;
 
   CameraController({this.controller});
@@ -571,7 +563,7 @@ class LocationController {
       _location = position;
       controller.positionVectors[0] =
           LatLng(position.latitude, position.longitude);
-      if (canMoveMap) {
+      if (canMoveMap && controller.hasLayout) {
         controller.justifyCamera();
       }
       print("location update $_location");
@@ -654,11 +646,24 @@ class HomeMainScreen extends InheritedWidget {
             .where((p) => p != null)
             .map((p) => LatLng(p.latitude, p.longitude)));
       }
-      Future.delayed(
+      if (camera.hasLayout) {
+        Future.delayed(
           mapDuration,
           () => camera.justifyCamera(
               positionVectors: pVectors, zoom: defaultZoom),
         );
+      } else {
+        camera.justifyCamera(positionVectors: [myLocation], zoom: defaultZoom);
+        await camera.controller.future;
+        Future.delayed(
+          Duration(seconds: 3),
+          () {
+            camera.hasLayout = true;
+            pVectors[0] = camera.positionVectors[0];
+            camera.justifyCamera(positionVectors: pVectors, zoom: defaultZoom);
+          },
+        );
+      }
     }
   }
 
