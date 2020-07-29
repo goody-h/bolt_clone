@@ -624,6 +624,8 @@ class HomeMainScreen extends InheritedWidget {
   final pickupZoom = 17.0;
   final assigningZoom = 17.2;
 
+  final mapDuration = Duration(milliseconds: 700);
+
   setDefaultView({bool isExpanded = false, bool isChanging = false}) async {
     if (!isExpanded) {
       final myLocation = await location.location;
@@ -652,7 +654,11 @@ class HomeMainScreen extends InheritedWidget {
             .where((p) => p != null)
             .map((p) => LatLng(p.latitude, p.longitude)));
       }
-      camera.justifyCamera(positionVectors: pVectors, zoom: defaultZoom);
+      Future.delayed(
+          mapDuration,
+          () => camera.justifyCamera(
+              positionVectors: pVectors, zoom: defaultZoom),
+        );
     }
   }
 
@@ -675,7 +681,11 @@ class HomeMainScreen extends InheritedWidget {
 
     final pVectors = [myLocation];
 
-    camera.justifyCamera(positionVectors: pVectors, zoom: destinationZoom);
+    Future.delayed(
+      mapDuration,
+      () => camera.justifyCamera(
+          positionVectors: pVectors, zoom: destinationZoom),
+    );
   }
 
   setCoosePickupView() async {
@@ -697,7 +707,10 @@ class HomeMainScreen extends InheritedWidget {
 
     final pVectors = [myLocation];
 
-    camera.justifyCamera(positionVectors: pVectors, zoom: pickupZoom);
+    Future.delayed(
+      mapDuration,
+      () => camera.justifyCamera(positionVectors: pVectors, zoom: pickupZoom),
+    );
   }
 
   setDetailsView({bool isChanging = false}) async {
@@ -724,7 +737,10 @@ class HomeMainScreen extends InheritedWidget {
             .where((p) => p != null)
             .map((p) => LatLng(p.latitude, p.longitude)));
       }
-      camera.justifyCamera(positionVectors: pVectors, zoom: 15.0);
+      Future.delayed(
+        mapDuration,
+        () => camera.justifyCamera(positionVectors: pVectors, zoom: 15.0),
+      );
     }
   }
 
@@ -752,7 +768,10 @@ class HomeMainScreen extends InheritedWidget {
 
     final pVectors = [position];
 
-    camera.justifyCamera(positionVectors: pVectors, zoom: pickupZoom);
+    Future.delayed(
+      mapDuration,
+      () => camera.justifyCamera(positionVectors: pVectors, zoom: pickupZoom),
+    );
   }
 
   @override
