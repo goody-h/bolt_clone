@@ -465,24 +465,30 @@ class InsetController {
   AnimationController controller;
   final streamController = StreamController<double>.broadcast();
   double _baseBottomInset = DefaultScreen.minHeight;
+  String tag;
   Completer<bool> hasInit;
 
-  InsetController({this.controller, this.hasInit});
+  InsetController({this.controller, this.hasInit}) {
+    setBaseInset("default", _baseBottomInset, shouldAnimate: true);
+  }
 
   double get inset => _baseBottomInset * controller.value;
 
   Stream<double> get stream => streamController.stream;
 
-  setBaseInset(double inset, {bool shouldAnimate}) async {
-    this._baseBottomInset = inset;
-    await hasInit.future;
-    streamController.sink.add(inset);
-    if (shouldAnimate) {
-      controller.value = 0.4;
-      controller.forward();
-    } else {
-      controller.value = 0.99;
-      controller.value = 1;
+  setBaseInset(String tag, double inset, {bool shouldAnimate}) async {
+    if (tag != this.tag) {
+      this.tag = tag;
+      this._baseBottomInset = inset;
+      await hasInit.future;
+      streamController.sink.add(inset);
+      if (shouldAnimate) {
+        controller.value = 0.4;
+        controller.forward();
+      } else {
+        controller.value = 0.99;
+        controller.value = 1;
+      }
     }
   }
 
@@ -619,7 +625,8 @@ class HomeMainScreen extends InheritedWidget {
     if (!isChanging) {
       menu.setCanPop(false);
       locationBtn.isVisible = true;
-      inset.setBaseInset(DefaultScreen.minHeight, shouldAnimate: !isExpanded);
+      inset.setBaseInset("default", DefaultScreen.minHeight,
+          shouldAnimate: !isExpanded);
       marker.showDrivers = true;
       marker.showHomeAndWork = true;
       marker.showPickupAndDestination = false;
@@ -646,7 +653,8 @@ class HomeMainScreen extends InheritedWidget {
 
     menu.setCanPop(true);
     locationBtn.isVisible = false;
-    inset.setBaseInset(DestinationScreen.minHeight, shouldAnimate: false);
+    inset.setBaseInset("dest", DestinationScreen.minHeight,
+        shouldAnimate: false);
     marker.showDrivers = false;
     marker.showHomeAndWork = false;
     marker.showPickupAndDestination = false;
@@ -667,7 +675,7 @@ class HomeMainScreen extends InheritedWidget {
 
     menu.setCanPop(true);
     locationBtn.isVisible = true;
-    inset.setBaseInset(PickupScreen.minHeight, shouldAnimate: false);
+    inset.setBaseInset("pick", PickupScreen.minHeight, shouldAnimate: false);
     marker.showDrivers = false;
     marker.showHomeAndWork = false;
     marker.showPickupAndDestination = false;
@@ -686,7 +694,8 @@ class HomeMainScreen extends InheritedWidget {
     if (!isChanging) {
       menu.setCanPop(true);
       locationBtn.isVisible = false;
-      inset.setBaseInset(DetailsScreen.minHeight, shouldAnimate: true);
+      inset.setBaseInset("details", DetailsScreen.minHeight,
+          shouldAnimate: true);
       marker.showDrivers = true;
       marker.showHomeAndWork = false;
       marker.showPickupAndDestination = true;
@@ -719,7 +728,7 @@ class HomeMainScreen extends InheritedWidget {
 
     menu.setCanPop(true);
     locationBtn.isVisible = true;
-    inset.setBaseInset(ReviewScreen.minHeight, shouldAnimate: true);
+    inset.setBaseInset("review", ReviewScreen.minHeight, shouldAnimate: true);
     marker.showDrivers = false;
     marker.showHomeAndWork = false;
     marker.showPickupAndDestination = false;
