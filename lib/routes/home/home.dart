@@ -7,7 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import '../../models/types.dart';
 import './screen.dart';
 
-import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/blocs.dart';
 import 'dart:math';
@@ -41,24 +40,6 @@ class _HomeState extends State<Home> {
   }
 
   Future<bool> _onBackPressed() {
-    // return showDialog(
-    //       context: context,
-    //       builder: (context) => new AlertDialog(
-    //         title: new Text('Are you sure?'),
-    //         content: new Text('Do you want to exit an App'),
-    //         actions: <Widget>[
-    //           new GestureDetector(
-    //             onTap: () => Navigator.of(context).pop(false),
-    //             child: Text("NO"),
-    //           ),
-    //           SizedBox(height: 16),
-    //           new GestureDetector(
-    //             onTap: () => Navigator.of(context).pop(true),
-    //             child: Text("YES"),
-    //           ),
-    //         ],
-    //       ),
-    //     ) ??
     bool shouldPop = onPopCallback() && true;
     return Future.value(shouldPop);
   }
@@ -204,11 +185,6 @@ class HomeMainState extends State<HomeMain>
       CameraPosition(target: LatLng(0.0, 0.0), zoom: 10);
 
   Completer<GoogleMapController> mapController = Completer();
-
-  final pos = Position(
-    latitude: 4.902008,
-    longitude: 7.005,
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -439,7 +415,6 @@ class CameraController {
 
     final CameraUpdate update =
         (this.positionVectors?.length ?? 0) > 1 ? _getBounds() : _getPosition();
-
     map.animateCamera(update);
   }
 
