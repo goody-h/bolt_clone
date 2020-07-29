@@ -1,3 +1,4 @@
+import 'package:bolt_clone/routes/home/home.dart';
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../../../resources/payment.dart';
@@ -12,23 +13,32 @@ import '../../../blocs/blocs.dart';
 class ReviewScreen extends StatelessWidget {
   ReviewScreen({
     Key key,
-    this.insets = 1,
     this.actionCallback,
     this.isPickup = false,
   }) : super(key: key);
 
-  final double insets;
   final HomeStateHandler actionCallback;
   final bool isPickup;
   static final double minHeight = 150;
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      height: minHeight * insets,
-      left: 0,
-      right: 0,
-      bottom: 0,
+    return AnimatedBuilder(
+      animation: HomeMainScreen.of(context).inset.controller,
+      builder: (context, child) {
+        return Stack(
+          children: <Widget>[
+            Positioned(
+              height:
+                  minHeight * HomeMainScreen.of(context).inset.controller.value,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: child,
+            )
+          ],
+        );
+      },
       child: Container(
         height: double.infinity,
         width: double.infinity,

@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 import 'dart:convert';
 import '../entities/entities.dart';
 import 'card.dart';
+import 'position.dart';
 
 @immutable
 class User {
@@ -11,6 +12,8 @@ class User {
   final String lastName;
   final String phoneNumber;
   final String paymentMethod;
+  final Position home;
+  final Position work;
   final Map<String, Card> cards;
 
   User({
@@ -21,6 +24,8 @@ class User {
     this.phoneNumber,
     this.paymentMethod,
     this.cards,
+    this.home,
+    this.work,
   });
 
   User copyWith({
@@ -28,6 +33,8 @@ class User {
     String lastName,
     String phoneNumber,
     String paymentMethod,
+    Position home,
+    Position work,
   }) {
     return User(
       userId: this.userId,
@@ -37,6 +44,8 @@ class User {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       cards: this.cards,
+      home: home ?? this.home,
+      work: work ?? this.work,
     );
   }
 
@@ -47,7 +56,8 @@ class User {
       firstName.hashCode ^
       lastName.hashCode ^
       phoneNumber.hashCode ^
-      paymentMethod.hashCode ^
+      home.hashCode ^
+      work.hashCode ^
       cards.hashCode;
 
   @override
@@ -61,6 +71,8 @@ class User {
           lastName == other.lastName &&
           phoneNumber == other.phoneNumber &&
           paymentMethod == other.paymentMethod &&
+          home == other.home &&
+          work == other.work &&
           cards == other.cards;
 
   @override
@@ -77,6 +89,8 @@ class User {
       phoneNumber: this.phoneNumber,
       paymentMethod: this.paymentMethod,
       cards: this.cards,
+      home: this.home,
+      work: this.work,
     );
   }
 
@@ -89,6 +103,8 @@ class User {
       phoneNumber: entity.phoneNumber,
       paymentMethod: entity.paymentMethod,
       cards: entity.cards,
+      home: entity.home,
+      work: entity.work,
     );
   }
 }

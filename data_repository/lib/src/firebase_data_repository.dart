@@ -67,6 +67,19 @@ class FirebaseDataRepository implements DataRepository {
     return docRef.setData(user.toEntity().toJson(), merge: true);
   }
 
+  @override
+  seedStream(dynamic data) async {
+    try {
+      if (data is String && data == "trip") {
+        final previous = await tripStream.stream.last;
+        tripStream.sink.add(null);
+        tripStream.sink.add(previous);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   final mockData = {
     "email": "goodhopeordu@yahoo.com",
     "userId": "XAE20b2x30v",
@@ -74,6 +87,16 @@ class FirebaseDataRepository implements DataRepository {
     "lastname": "Ordu",
     "phoneNumber": "+2348121451240",
     "paymentMethod": "signature0",
+    "home": {
+      "longitude": 7.005,
+      "latitude": 4.902008,
+      "address": "Rukpokwu",
+    },
+    "work": {
+      "longitude": 7.005,
+      "latitude": 4.902008,
+      "address": "Rukpokwu",
+    },
     "cards": {
       "signature0": {
         "signature": "signature0",

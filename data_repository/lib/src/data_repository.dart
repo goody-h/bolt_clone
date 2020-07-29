@@ -16,4 +16,6 @@ abstract class DataRepository {
   Future<void> init(dynamic data);
 
   Future<void> dispose();
+
+  Future<void> seedStream(dynamic data);
 }

@@ -1,3 +1,4 @@
+import 'package:bolt_clone/routes/home/home.dart';
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../utils.dart';
@@ -6,13 +7,11 @@ class DetailsScreen extends StatelessWidget {
   DetailsScreen({
     Key key,
     this.gestureHandler,
-    this.inset,
     this.maxHeight,
     this.actionCallback,
   }) : super(key: key);
 
   final GestureHandler gestureHandler;
-  final double inset;
   final double maxHeight;
   final HomeStateHandler actionCallback;
   static final double minHeight = 200;
@@ -37,11 +36,8 @@ class DetailsScreen extends StatelessWidget {
           ),
           ignoring: gestureHandler.controller.value == 0,
         ),
-        Positioned(
-          height: gestureHandler.lerp(minHeight, maxHeight) * inset,
-          left: 0,
-          right: 0,
-          bottom: 0,
+        AnimatedBuilder(
+          animation: HomeMainScreen.of(context).inset.controller,
           child: GestureDetector(
             onVerticalDragUpdate: gestureHandler.handleDragUpdate,
             onVerticalDragEnd: gestureHandler.handleDragEnd,
@@ -71,12 +67,23 @@ class DetailsScreen extends StatelessWidget {
               ),
             ),
           ),
+          builder: (context, child) {
+            return Stack(
+              children: <Widget>[
+                Positioned(
+                  height: gestureHandler.lerp(minHeight, maxHeight) *
+                      HomeMainScreen.of(context).inset.controller.value,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: child,
+                ),
+              ],
+            );
+          },
         ),
-        Positioned(
-          height: (100 - gestureHandler.lerp(0, 100)) * inset,
-          left: 0,
-          right: 0,
-          bottom: 0,
+        AnimatedBuilder(
+          animation: HomeMainScreen.of(context).inset.controller,
           child: Container(
             height: 100,
             width: double.infinity,
@@ -104,7 +111,21 @@ class DetailsScreen extends StatelessWidget {
               ),
             ),
           ),
-        )
+          builder: (context, child) {
+            return Stack(
+              children: <Widget>[
+                Positioned(
+                  height: (100 - gestureHandler.lerp(0, 100)) *
+                      HomeMainScreen.of(context).inset.controller.value,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: child,
+                ),
+              ],
+            );
+          },
+        ),
       ],
     );
   }

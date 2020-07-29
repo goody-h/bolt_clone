@@ -17,7 +17,7 @@ class TripBloc extends Bloc<TripEvent, TripState> {
   Stream<TripState> mapEventToState(TripEvent event) async* {
     if (event is LoadTrip) {
       yield* _mapLoadTripToState();
-    } else if (event is TripUpdated) {
+    } else if (event is ActiveTripUpdated) {
       yield* _mapTripUpdateToState(event);
     }
   }
@@ -25,12 +25,16 @@ class TripBloc extends Bloc<TripEvent, TripState> {
   Stream<TripState> _mapLoadTripToState() async* {
     _tripSubscription?.cancel();
     _tripSubscription = _dataRepository.getCurrentTrip().listen(
-          (trip) => add(TripUpdated(trip)),
+          (trip) => trip != null &&
+                  ["assigning", "active", "started"].contains(trip.status)
+              ? add(ActiveTripUpdated(trip))
+              : add(InactiveTrip()),
         );
+    _dataRepository.seedStream("trip");
   }
 
-  Stream<TripState> _mapTripUpdateToState(TripUpdated event) async* {
-    yield TripLoaded(event.trip);
+  Stream<TripState> _mapTripUpdateToState(ActiveTripUpdated event) async* {
+    yield TripActive(event.trip);
   }
 
   @override

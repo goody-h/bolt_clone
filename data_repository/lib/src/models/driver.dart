@@ -12,6 +12,7 @@ class Driver extends Equatable {
   final String id;
   final Position location;
   final String phoneNumber;
+  final String tier;
 
   const Driver({
     this.id,
@@ -22,6 +23,7 @@ class Driver extends Equatable {
     this.imageUrl,
     this.location,
     this.phoneNumber,
+    this.tier,
   });
 
   @override
@@ -31,7 +33,7 @@ class Driver extends Equatable {
   String toString() {
     return 'Driver { id: $id, carModel: $carModel, carColor: $carColor, ' +
         'rating: $rating, name: $name, image: $imageUrl, location: $location, ' +
-        'phoneNumber: $phoneNumber }';
+        'phoneNumber: $phoneNumber, tier: $tier }';
   }
 
   static Driver fromJson(Map<String, Object> json) {
@@ -43,6 +45,7 @@ class Driver extends Equatable {
       name: json["name"] as String,
       imageUrl: json["imageUrl"] as String,
       phoneNumber: json["phoneNumber"] as String,
+      tier: json["tier"] as String,
       location: Position.fromJson(json["location"] as Map<String, dynamic>),
     );
   }

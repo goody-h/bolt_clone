@@ -1,3 +1,4 @@
+import 'package:bolt_clone/routes/home/home.dart';
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../utils.dart';
@@ -6,7 +7,6 @@ class DefaultScreen extends StatelessWidget {
   DefaultScreen({
     Key key,
     this.gestureHandler,
-    this.inset,
     this.maxHeight,
     this.isPickup = false,
     this.actionCallback,
@@ -15,7 +15,6 @@ class DefaultScreen extends StatelessWidget {
   final bool isPickup;
   final GestureHandler gestureHandler;
   final HomeStateHandler actionCallback;
-  final double inset;
   final double maxHeight;
 
   static final double minHeight = 250;
@@ -42,13 +41,8 @@ class DefaultScreen extends StatelessWidget {
           ),
           ignoring: isPickup || gestureHandler.controller.value == 0,
         ),
-        Positioned(
-          height: !isPickup
-              ? gestureHandler.lerp(minHeight, maxHeight) * inset
-              : maxHeight,
-          left: 0,
-          right: 0,
-          bottom: 0,
+        AnimatedBuilder(
+          animation: HomeMainScreen.of(context).inset.controller,
           child: GestureDetector(
             onVerticalDragUpdate:
                 !isPickup ? gestureHandler.handleDragUpdate : null,
@@ -85,6 +79,22 @@ class DefaultScreen extends StatelessWidget {
               ),
             ),
           ),
+          builder: (context, child) {
+            return Stack(
+              children: <Widget>[
+                Positioned(
+                  height: !isPickup
+                      ? gestureHandler.lerp(minHeight, maxHeight) *
+                          HomeMainScreen.of(context).inset.controller.value
+                      : maxHeight,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: child,
+                ),
+              ],
+            );
+          },
         ),
         Positioned(
           height: !isPickup ? gestureHandler.lerp(0, 180) : 180,
