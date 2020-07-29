@@ -144,7 +144,7 @@ class HomeMainState extends State<HomeMain>
 
     marker = MarkerController();
 
-    location = LocationController();
+    location = LocationController(camera);
 
     pin = SelectionPinController();
 
@@ -560,13 +560,20 @@ class RouteController {
 
 class LocationController {
   final Geolocator _geolocator = Geolocator();
+  final CameraController controller;
+  bool canMoveMap = true;
   Position _location;
-  LocationController() {
+  LocationController(this.controller) {
     _geolocator
         .getPositionStream(LocationOptions(
             accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 100))
         .listen((position) {
       _location = position;
+      controller.positionVectors[0] =
+          LatLng(position.latitude, position.longitude);
+      if (canMoveMap) {
+        controller.justifyCamera();
+      }
       print("location update $_location");
     });
   }
@@ -632,6 +639,7 @@ class HomeMainScreen extends InheritedWidget {
       marker.showPickupAndDestination = false;
       // more marker update
       pin.disable();
+      location.canMoveMap = true;
       route.isVisible = false;
       setState();
 
@@ -660,6 +668,7 @@ class HomeMainScreen extends InheritedWidget {
     marker.showPickupAndDestination = false;
     // more marker update
 
+    location.canMoveMap = false;
     pin.initPin(isPickup: false, position: myLocation);
     route.isVisible = false;
     setState();
@@ -681,6 +690,7 @@ class HomeMainScreen extends InheritedWidget {
     marker.showPickupAndDestination = false;
     // more marker update
 
+    location.canMoveMap = false;
     pin.initPin(isPickup: true, position: myLocation);
     route.isVisible = false;
     setState();
@@ -701,6 +711,7 @@ class HomeMainScreen extends InheritedWidget {
       marker.showPickupAndDestination = true;
       // more marker update
       pin.disable();
+      location.canMoveMap = true;
       route.isVisible = true;
       setState();
 
@@ -734,6 +745,7 @@ class HomeMainScreen extends InheritedWidget {
     marker.showPickupAndDestination = false;
     // more marker update
 
+    location.canMoveMap = false;
     pin.initPin(isPickup: true, position: position);
     route.isVisible = false;
     setState();
