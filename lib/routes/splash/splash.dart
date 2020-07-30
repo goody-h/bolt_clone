@@ -112,6 +112,7 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: <Widget>[
           AnimatedPositioned(
