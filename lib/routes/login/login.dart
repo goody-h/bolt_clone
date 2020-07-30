@@ -237,6 +237,12 @@ class _LoginState extends State<Login> {
                       isDense: true,
                       hintStyle: TextStyle(
                           fontSize: 22, color: Colors.grey, letterSpacing: 1),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.grey[300],
+                          width: 0.5,
+                        ),
+                      ),
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
                           color: isKeyboardVisible
