@@ -160,89 +160,86 @@ class _LoginState extends State<Login> {
                 child: AnimatedOpacity(
                   opacity: isKeyboardVisible ? 1 : 0,
                   duration: Duration(milliseconds: 300),
-                  child: MediaQuery(
-                    data: MediaQuery.of(context),
-                    child: Container(
-                      color: Colors.white,
-                      height: double.infinity,
-                      width: double.infinity,
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom + 25,
-                        top: MediaQuery.of(context).viewInsets.top + 25,
-                      ),
-                      child: Stack(
-                        children: <Widget>[
-                          Align(
-                            alignment: Alignment.topLeft,
-                            child: FlatButton(
-                              padding: EdgeInsets.only(right: 30),
-                              onPressed: () {
-                                textFieldNode.unfocus();
-                              },
-                              child: Icon(Icons.arrow_back),
+                  child: Container(
+                    color: Colors.white,
+                    height: double.infinity,
+                    width: double.infinity,
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom + 25,
+                      top: MediaQuery.of(context).viewInsets.top + 25,
+                    ),
+                    child: Stack(
+                      children: <Widget>[
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: FlatButton(
+                            padding: EdgeInsets.only(right: 30),
+                            onPressed: () {
+                              textFieldNode.unfocus();
+                            },
+                            child: Icon(Icons.arrow_back),
+                          ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 100),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  "You'll get an SMS to",
+                                  style:
+                                      TextStyle(fontSize: 18, letterSpacing: 1),
+                                ),
+                                Text(
+                                  "confirm your number",
+                                  style:
+                                      TextStyle(fontSize: 18, letterSpacing: 1),
+                                ),
+                              ],
                             ),
                           ),
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 100),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Text(
-                                    "You'll get an SMS to",
-                                    style: TextStyle(
-                                        fontSize: 18, letterSpacing: 1),
-                                  ),
-                                  Text(
-                                    "confirm your number",
-                                    style: TextStyle(
-                                        fontSize: 18, letterSpacing: 1),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 100),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Text(
-                                    "Or login with Facebook",
-                                    style: TextStyle(
-                                        fontSize: 14, letterSpacing: 1),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                        top: 15, left: 25, right: 25),
-                                    child: RaisedButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(
-                                                builder: (context) => Home()));
-                                      },
-                                      child: Text(
-                                        "NEXT",
-                                        style: TextStyle(
-                                            fontSize: 18, letterSpacing: 1),
-                                      ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 100),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  "Or login with Facebook",
+                                  style:
+                                      TextStyle(fontSize: 14, letterSpacing: 1),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      top: 15, left: 25, right: 25),
+                                  child: RaisedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(
+                                              builder: (context) => Home()));
+                                    },
+                                    child: Text(
+                                      "NEXT",
+                                      style: TextStyle(
+                                          fontSize: 18, letterSpacing: 1),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
