@@ -115,7 +115,10 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  double get maxHeight => MediaQuery.of(context).size.height;
+  double get maxHeight =>
+      MediaQuery.of(context).size.height -
+      MediaQuery.of(context).padding.top -
+      20;
 
   @override
   Widget build(BuildContext context) {
