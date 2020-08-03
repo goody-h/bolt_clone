@@ -95,8 +95,12 @@ class DetailsScreen extends StatelessWidget {
         AnimatedBuilder(
           animation: HomeMainScreen.of(context).inset.controller,
           child: GestureDetector(
-            onVerticalDragUpdate: gestureHandler.handleDragUpdate,
-            onVerticalDragEnd: gestureHandler.handleDragEnd,
+            onVerticalDragUpdate: gestureHandler.controller.value > 0.0
+                ? gestureHandler.handleDragUpdate
+                : null,
+            onVerticalDragEnd: gestureHandler.controller.value > 0.0
+                ? gestureHandler.handleDragEnd
+                : null,
             child: Container(
               height: double.infinity,
               width: double.infinity,
