@@ -32,7 +32,9 @@ class DetailsScreen extends StatelessWidget {
               height: double.infinity,
               width: double.infinity,
             ),
-            onTap: () {},
+            onTap: () {
+              gestureHandler.controller.reverse();
+            },
           ),
           ignoring: gestureHandler.controller.value == 0,
         ),
