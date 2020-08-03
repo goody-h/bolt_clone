@@ -89,7 +89,8 @@ class _HomeScreenState extends State<HomeScreen>
           home.setChooseDestinationView();
           break;
         case HomeState.PLAN_END:
-          home.setDefaultView(isExpanded: true);
+          home.setDefaultView(
+              isExpanded: true, isChanging: current == HomeState.DEFAULT);
           break;
         case HomeState.RIDE:
           if (current == HomeState.PLAN_END || current == HomeState.PICK) {
