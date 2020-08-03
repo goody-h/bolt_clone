@@ -158,9 +158,9 @@ class _HomeScreenState extends State<HomeScreen>
             return DetailsScreen(
               gestureHandler: GestureHandler(
                 controller: _controller,
-                maxBound: maxHeight - 120,
+                maxBound: maxHeight - 85,
               ),
-              maxHeight: maxHeight - 120,
+              maxHeight: maxHeight - 85,
               actionCallback: (action, setstate) {
                 _showAction(
                   action: action,
