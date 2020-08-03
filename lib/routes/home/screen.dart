@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen>
     _controller = AnimationController(
       vsync: this,
       value: 0,
-      duration: Duration(milliseconds: 600),
+      duration: Duration(milliseconds: 500),
     );
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       HomeMainScreen.of(context).menu.registerOnPop(_onPop);
