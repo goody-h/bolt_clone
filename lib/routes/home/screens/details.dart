@@ -14,7 +14,61 @@ class DetailsScreen extends StatelessWidget {
   final GestureHandler gestureHandler;
   final double maxHeight;
   final HomeStateHandler actionCallback;
-  static final double minHeight = 200;
+  static final double minHeight = 320;
+
+  Widget _getListItem(
+      IconData icon, String title, String subTitle, bool isSelected) {
+    return SizedBox(
+      width: double.infinity,
+      height: 82,
+      child: FlatButton(
+        color: isSelected ? Colors.lightGreen : Colors.white,
+        highlightColor: Colors.lightGreen.withOpacity(0.4),
+        onPressed: () {
+          gestureHandler.controller.forward();
+        },
+        padding: EdgeInsets.only(right: 20, left: 20, bottom: 0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(right: 20),
+              child: Icon(
+                icon,
+                color: Colors.grey,
+                size: 28,
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(title),
+                  Text(
+                    subTitle,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text("N 300"),
+                Text(
+                  "N 500",
+                  style: TextStyle(
+                      color: Colors.grey,
+                      decoration: TextDecoration.lineThrough),
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +114,32 @@ class DetailsScreen extends StatelessWidget {
                   )
                 ],
               ),
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 100),
-                child: FlatButton(
-                  onPressed: () {},
-                  child: Text("Comfort"),
+              child: SingleChildScrollView(
+                physics: NeverScrollableScrollPhysics(),
+                child: Opacity(
+                  opacity: (0.5 - gestureHandler.controller.value).abs() / 0.5,
+                  child: gestureHandler.controller.value < 0.5
+                      ? Container(
+                          height: minHeight,
+                          padding: EdgeInsets.only(bottom: 135),
+                          //possible scroll view
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              _getListItem(
+                                  Icons.local_taxi, "Lite", "6 min", true),
+                              _getListItem(Icons.local_car_wash, "Premium",
+                                  "10 min", false),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          margin: EdgeInsets.only(top: 20),
+                          height: maxHeight - 20,
+                          color: Colors.blue,
+                          width: double.infinity,
+                          child: Text("details"),
+                        ),
                 ),
               ),
             ),
@@ -87,7 +162,7 @@ class DetailsScreen extends StatelessWidget {
         AnimatedBuilder(
           animation: HomeMainScreen.of(context).inset.controller,
           child: Container(
-            height: 100,
+            height: 135,
             width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white, //background color of box
@@ -102,13 +177,62 @@ class DetailsScreen extends StatelessWidget {
             child: SingleChildScrollView(
               physics: NeverScrollableScrollPhysics(),
               child: Container(
-                height: 100,
+                height: 135,
+                padding: EdgeInsets.only(bottom: 20),
                 width: double.infinity,
-                child: RaisedButton(
-                  child: Text("Confirm ride"),
-                  onPressed: () {
-                    actionCallback(HomeState.CONFIRM, true);
-                  },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(
+                      height: 50,
+                      width: double.infinity,
+                      child: FlatButton(
+                        onPressed: () {},
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.credit_card),
+                            Container(width: 10),
+                            Text('Cash'),
+                            Icon(Icons.keyboard_arrow_down),
+                            Spacer(flex: 1),
+                            Container(
+                              child: Text("-40% promo",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 12)),
+                              padding: EdgeInsets.only(
+                                  left: 10, right: 10, top: 5, bottom: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.yellow,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(left: 20, right: 20),
+                      child: SizedBox(
+                        height: 55,
+                        width: double.infinity,
+                        child: RaisedButton(
+                          color: Colors.green,
+                          elevation: 1,
+                          shape: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide.none,
+                          ),
+                          child: Text(
+                            "SELECT LITE",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                          onPressed: () {
+                            actionCallback(HomeState.CONFIRM, true);
+                          },
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
             ),
@@ -117,7 +241,7 @@ class DetailsScreen extends StatelessWidget {
             return Stack(
               children: <Widget>[
                 Positioned(
-                  height: (100 - gestureHandler.lerp(0, 100)) *
+                  height: (135 - gestureHandler.lerp(0, 135)) *
                       HomeMainScreen.of(context).inset.controller.value,
                   left: 0,
                   right: 0,
