@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen>
     _controller = AnimationController(
       vsync: this,
       value: 0,
-      duration: Duration(milliseconds: 600),
+      duration: Duration(milliseconds: 500),
     );
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       HomeMainScreen.of(context).menu.registerOnPop(_onPop);
@@ -89,7 +89,8 @@ class _HomeScreenState extends State<HomeScreen>
           home.setChooseDestinationView();
           break;
         case HomeState.PLAN_END:
-          home.setDefaultView(isExpanded: true);
+          home.setDefaultView(
+              isExpanded: true, isChanging: current == HomeState.DEFAULT);
           break;
         case HomeState.RIDE:
           if (current == HomeState.PLAN_END || current == HomeState.PICK) {
@@ -114,7 +115,10 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  double get maxHeight => MediaQuery.of(context).size.height;
+  double get maxHeight =>
+      MediaQuery.of(context).size.height -
+      MediaQuery.of(context).padding.top -
+      20;
 
   @override
   Widget build(BuildContext context) {
@@ -154,9 +158,9 @@ class _HomeScreenState extends State<HomeScreen>
             return DetailsScreen(
               gestureHandler: GestureHandler(
                 controller: _controller,
-                maxBound: maxHeight - 120,
+                maxBound: maxHeight - 85,
               ),
-              maxHeight: maxHeight - 120,
+              maxHeight: maxHeight - 85,
               actionCallback: (action, setstate) {
                 _showAction(
                   action: action,
@@ -167,7 +171,6 @@ class _HomeScreenState extends State<HomeScreen>
           case HomeState.CONFIRM:
             // set ride display
             return ReviewScreen(
-              isPickup: true,
               actionCallback: (action, setstate) {
                 _showAction(
                   action: action,

@@ -1,6 +1,7 @@
 import 'package:bolt_clone/blocs/authentication_bloc/bloc.dart';
 import 'package:bolt_clone/routes/home/home.dart';
 import 'package:bolt_clone/routes/login/login.dart';
+import 'package:bolt_clone/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -112,6 +113,7 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: <Widget>[
           AnimatedPositioned(
@@ -124,8 +126,8 @@ class SplashState extends State<Splash> with TickerProviderStateMixin {
               builder: (context, child) => Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: Colors.green
-                    .withGreen(100 + (155 * _controller.value) ~/ 1),
+                color: Color.lerp(AppColors.greenButton, AppColors.greenDark,
+                    _controller.value),
                 child: Center(
                   child: AnimatedOpacity(
                     opacity: fadeInLogo ? 1.0 : 0.0,
