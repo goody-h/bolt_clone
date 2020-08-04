@@ -401,6 +401,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
               child: SingleChildScrollView(
                 physics: NeverScrollableScrollPhysics(),
                 child: Padding(
+                  //TODO remove unecessary padding
                   padding: EdgeInsets.only(
                     bottom: 0,
                     // right: 20,
@@ -530,12 +531,13 @@ class _DefaultScreenState extends State<DefaultScreen> {
           },
         ),
         Positioned(
-          height: widget.gestureHandler.lerp(0, 180),
+          height: widget.gestureHandler
+              .lerp(0, MediaQuery.of(context).padding.top + 145),
           left: 0,
           right: 0,
           top: 0,
           child: Container(
-            height: MediaQuery.of(context).padding.top + 150,
+            height: MediaQuery.of(context).padding.top + 145,
             width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white, //background color of box
@@ -553,7 +555,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
               child: Container(
                 padding:
                     EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                height: MediaQuery.of(context).padding.top + 150,
+                height: MediaQuery.of(context).padding.top + 145,
                 width: double.infinity,
                 child: _getHeader(),
               ),
