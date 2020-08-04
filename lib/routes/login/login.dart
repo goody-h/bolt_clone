@@ -12,6 +12,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   @override
   void initState() {
+    super.initState();
     KeyboardVisibilityNotification().addNewListener(
       onChange: (visible) {
         setState(() => isKeyboardVisible = visible);
@@ -21,11 +22,19 @@ class _LoginState extends State<Login> {
       },
     );
     textFieldNode.addListener(_handleFocusChange);
-    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      Future.delayed(Duration(milliseconds: 500), () {
+        setState(() => animateScene2 = true);
+      });
+      setState(() => animateScene1 = true);
+    });
   }
 
   bool isKeyboardVisible = false;
   FocusNode textFieldNode = FocusNode();
+  bool animateScene1 = false;
+  bool animateScene2 = false;
 
   _handleFocusChange() {
     setState(() {
@@ -109,8 +118,7 @@ class _LoginState extends State<Login> {
                             ),
                             AnimatedContainer(
                               duration: Duration(milliseconds: 500),
-                              // TODO: manipulate width for animation
-                              width: 70,
+                              width: animateScene2 ? 70 : 0,
                               child: Divider(
                                 height: 65,
                                 color: AppColors.white,
@@ -143,8 +151,7 @@ class _LoginState extends State<Login> {
                     children: <Widget>[
                       AnimatedPositioned(
                         duration: Duration(milliseconds: 500),
-                        // TODO: manipulate bottom position for animation
-                        bottom: 100,
+                        bottom: animateScene1 ? 100 : 40,
                         left: 40,
                         right: 40,
                         child: Text(
@@ -267,7 +274,7 @@ class _LoginState extends State<Login> {
                 children: <Widget>[
                   Icon(Icons.flag),
                   Container(
-                    width: 65,
+                    width: 70,
                     padding: EdgeInsets.only(right: 10, left: 5),
                     child: TextField(
                       maxLines: 1,
@@ -283,7 +290,7 @@ class _LoginState extends State<Login> {
                         ),
                         isDense: true,
                         hintStyle: TextStyle(
-                            fontSize: 18,
+                            fontSize: 22,
                             color: AppColors.blackLight,
                             letterSpacing: 1),
                         disabledBorder: UnderlineInputBorder(
@@ -302,9 +309,11 @@ class _LoginState extends State<Login> {
                   )
                 ],
               ),
-              padding:
-                  // TODO manipulate bottom padding for animation
-                  EdgeInsets.only(top: 200, bottom: 60, left: 40, right: 40),
+              padding: EdgeInsets.only(
+                  top: 200,
+                  bottom: animateScene1 ? 60 : 0,
+                  left: 40,
+                  right: 40),
               alignment: isKeyboardVisible
                   ? Alignment.topCenter
                   : Alignment.bottomCenter,
