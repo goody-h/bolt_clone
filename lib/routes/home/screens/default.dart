@@ -149,6 +149,10 @@ class _DefaultScreenState extends State<DefaultScreen> {
     );
     widget.gestureHandler.controller.addListener(_handleController);
     active = s2;
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _handleController();
+    });
   }
 
   AddressSearchController active;
