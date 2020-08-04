@@ -179,28 +179,29 @@ class _DefaultScreenState extends State<DefaultScreen> {
 
   Widget _getHeader() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(top: 2, bottom: 2),
-          child: Row(
-            children: <Widget>[
-              SizedBox(
-                width: 47,
-                child: FlatButton(
-                  padding: EdgeInsets.only(right: 0, left: 0),
-                  onPressed: () {},
-                  child: Icon(Icons.arrow_back),
+        SizedBox(
+          height: 50,
+          child: FlatButton(
+            onPressed: () {
+              widget.gestureHandler.controller.reverse();
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(Icons.arrow_back),
+                Container(width: 10),
+                Text(
+                  "Set destination",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              Text(
-                "Set destination",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Row(
@@ -217,18 +218,19 @@ class _DefaultScreenState extends State<DefaultScreen> {
                     child: _getTextField(s1),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(bottom: 8),
+                    padding: EdgeInsets.only(bottom: 4),
                     child: _getTextField(s2),
                   )
                 ],
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 43),
+              padding: EdgeInsets.only(top: 40),
               child: SizedBox(
-                width: 60,
+                width: 55,
+                height: 55,
                 child: FlatButton(
-                  padding: EdgeInsets.only(right: 0, left: 0),
+                  shape: CircleBorder(side: BorderSide.none),
                   onPressed: () {},
                   child: Icon(Icons.add),
                 ),
@@ -308,6 +310,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
               onPressed: () {
                 search.clear();
               },
+              shape: CircleBorder(side: BorderSide.none),
               child: Icon(
                 Icons.close,
                 size: 18,

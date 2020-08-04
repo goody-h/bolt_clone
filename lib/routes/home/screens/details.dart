@@ -132,7 +132,7 @@ class DetailsScreen extends StatelessWidget {
                             children: <Widget>[
                               _getListItem(
                                   Icons.local_taxi, "Lite", "6 min", true),
-                              _getListItem(Icons.local_car_wash, "Premium",
+                              _getListItem(Icons.directions_transit, "Premium",
                                   "10 min", false),
                             ],
                           ),
