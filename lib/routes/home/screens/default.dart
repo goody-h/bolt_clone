@@ -291,7 +291,8 @@ class _DefaultScreenState extends State<DefaultScreen> {
       child: StreamBuilder<int>(
         stream: search.stream,
         builder: (context, snap) {
-          if (!search.showSuffix) {
+          if (!search.showSuffix ||
+              (!search.isLoading && (search.controller.text ?? "") == "")) {
             return Container();
           } else if (search.isLoading) {
             return Padding(
