@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bolt_clone/routes/home/home.dart';
+import 'package:bolt_clone/utils.dart';
 import 'package:data_repository/data_repository.dart';
 import 'package:flutter/material.dart';
 import '../models.dart';
@@ -248,7 +249,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
       height: 40,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
-        color: Color(int.parse("0xFFF4F4F6")),
+        color: AppColors.inputGrey,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -264,19 +265,19 @@ class _DefaultScreenState extends State<DefaultScreen> {
                 contentPadding: EdgeInsets.all(10),
                 isDense: true,
                 hintStyle: TextStyle(
-                    fontSize: 16, color: Colors.grey, letterSpacing: 1),
+                    fontSize: 16, color: AppColors.textGrey, letterSpacing: 1),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: Color(int.parse("0xFFF4F4F6")),
+                    color: AppColors.inputGrey,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: Color(int.parse("0xFFF4F4F6")),
+                    color: AppColors.inputGrey,
                   ),
                 ),
               ),
-              cursorColor: Colors.green,
+              cursorColor: AppColors.greenIcon.withOpacity(0.5),
               style: TextStyle(fontSize: 16),
             ),
           ),
@@ -301,7 +302,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
               padding: EdgeInsets.all(13),
               child: CircularProgressIndicator(
                 strokeWidth: 1,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.greenIcon),
               ),
             );
           } else {
@@ -314,7 +315,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
               child: Icon(
                 Icons.close,
                 size: 18,
-                color: Colors.grey,
+                color: AppColors.iconGrey,
               ),
             );
           }
@@ -340,7 +341,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
               padding: EdgeInsets.only(right: 20),
               child: Icon(
                 icon,
-                color: Colors.grey,
+                color: AppColors.iconGrey,
               ),
             ),
             Column(
@@ -350,7 +351,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
                 Text(title),
                 Text(
                   subTitle,
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: AppColors.textGreySub),
                 ),
               ],
             )
@@ -372,8 +373,8 @@ class _DefaultScreenState extends State<DefaultScreen> {
       children: <Widget>[
         IgnorePointer(
           child: Container(
-            color:
-                Colors.black.withOpacity(widget.gestureHandler.lerp(0, 0.75)),
+            color: AppColors.black
+                .withOpacity(widget.gestureHandler.lerp(0, 0.75)),
             height: double.infinity,
             width: double.infinity,
           ),
@@ -392,10 +393,10 @@ class _DefaultScreenState extends State<DefaultScreen> {
                   topLeft: Radius.circular(15),
                   topRight: Radius.circular(15),
                 ),
-                color: Colors.white, //background color of box
+                color: AppColors.white, //background color of box
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: AppColors.black.withOpacity(0.2),
                     blurRadius: 2, // soften the shadow
                     spreadRadius: 1.0, //extend the shadow
                   )
@@ -428,7 +429,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
                                   width: 40,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(2),
-                                    color: Colors.grey,
+                                    color: AppColors.iconGrey,
                                   ),
                                 ),
                               ),
@@ -436,7 +437,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
                               Text(
                                 "Nice to see you!",
                                 style: TextStyle(
-                                  color: Colors.grey,
+                                  color: AppColors.textGrey,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -445,7 +446,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
                               Text(
                                 "Where are you going?",
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.blackLight,
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -454,8 +455,8 @@ class _DefaultScreenState extends State<DefaultScreen> {
                               RaisedButton(
                                 elevation: 1.5,
                                 highlightElevation: 1.5,
-                                highlightColor: Color(int.parse("0xFFDCDCDC")),
-                                color: Colors.white,
+                                highlightColor: AppColors.highlightGrey,
+                                color: AppColors.white,
                                 onPressed: () {
                                   widget.gestureHandler.controller.forward();
                                 },
@@ -467,7 +468,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
                                     children: <Widget>[
                                       Icon(
                                         Icons.search,
-                                        color: Colors.blueAccent,
+                                        color: AppColors.indigo,
                                       ),
                                       Container(
                                         width: 10,
@@ -475,7 +476,7 @@ class _DefaultScreenState extends State<DefaultScreen> {
                                       Text(
                                         "Search destination",
                                         style: TextStyle(
-                                          color: Colors.grey,
+                                          color: AppColors.textGrey,
                                           fontSize: 16,
                                           fontWeight: FontWeight.w400,
                                         ),
@@ -543,10 +544,10 @@ class _DefaultScreenState extends State<DefaultScreen> {
             height: MediaQuery.of(context).padding.top + 145,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white, //background color of box
+              color: AppColors.white, //background color of box
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: AppColors.black.withOpacity(0.2),
                   blurRadius: 2, // soften the shadow
                   spreadRadius: 1.0, //extend the shadow
                 )
@@ -576,10 +577,10 @@ class _DefaultScreenState extends State<DefaultScreen> {
             height: 50,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white, //background color of box
+              color: AppColors.white, //background color of box
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: AppColors.black.withOpacity(0.2),
                   blurRadius: 2, // soften the shadow
                   spreadRadius: 1.0, //extend the shadow
                 )

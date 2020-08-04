@@ -7,6 +7,7 @@ class AppColors {
   static const greenIcon = Color(0xFF2EB875);
   static const greenButton = Color(0xFF34D186);
   static const greenLight = Color(0xFFD9FDE5);
+  static const greenDark = Color(0xFF219059);
   static const greenHighlight = Color(0xFFECFEF2);
   static const indigo = Color(0xFF6675FF);
   static const indigoPlaceMark = Color(0xFF6675FE);

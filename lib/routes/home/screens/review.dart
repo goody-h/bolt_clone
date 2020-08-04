@@ -1,4 +1,5 @@
 import 'package:bolt_clone/routes/home/home.dart';
+import 'package:bolt_clone/utils.dart';
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../../../resources/payment.dart';
@@ -45,10 +46,10 @@ class ReviewScreen extends StatelessWidget {
             topLeft: Radius.circular(15),
             topRight: Radius.circular(15),
           ),
-          color: Colors.white, //background color of box
+          color: AppColors.white, //background color of box
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: AppColors.black.withOpacity(0.2),
               blurRadius: 2, // soften the shadow
               spreadRadius: 1.0, //extend the shadow
             ),
@@ -66,7 +67,10 @@ class ReviewScreen extends StatelessWidget {
               ),
               Padding(
                 padding: EdgeInsets.only(top: 12, bottom: 12),
-                child: Text("Pickup in 1 min  N850"),
+                child: Text(
+                  "Pickup in 1 min  N850",
+                  style: TextStyle(color: AppColors.textGrey),
+                ),
               ),
               Divider(height: 1),
               SizedBox(
@@ -74,7 +78,7 @@ class ReviewScreen extends StatelessWidget {
                 width: double.infinity,
                 child: Row(
                   children: <Widget>[
-                    Icon(Icons.album, size: 14, color: Colors.green),
+                    Icon(Icons.album, size: 14, color: AppColors.greenIcon),
                     Container(width: 10),
                     Text(
                       'Unnamed Road',
@@ -90,7 +94,7 @@ class ReviewScreen extends StatelessWidget {
                           actionCallback(HomeState.PLAN_START, true);
                         },
                         shape: CircleBorder(side: BorderSide.none),
-                        child: Icon(Icons.edit),
+                        child: Icon(Icons.edit, color: AppColors.iconGrey),
                       ),
                     ),
                   ],
@@ -100,7 +104,7 @@ class ReviewScreen extends StatelessWidget {
                 height: 55,
                 width: double.infinity,
                 child: RaisedButton(
-                  color: Colors.green,
+                  color: AppColors.greenButton,
                   elevation: 1,
                   shape: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -108,7 +112,7 @@ class ReviewScreen extends StatelessWidget {
                   ),
                   child: Text(
                     "CONFIRM ORDER",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    style: TextStyle(color: AppColors.white, fontSize: 16),
                   ),
                   onPressed: () async {
                     var manager = PaymentProvider(handleStatus: (m) {

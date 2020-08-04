@@ -1,3 +1,4 @@
+import 'package:bolt_clone/utils.dart';
 import 'package:flutter/material.dart';
 import '../models.dart';
 
@@ -27,10 +28,10 @@ class DestinationScreen extends StatelessWidget {
             topLeft: Radius.circular(15),
             topRight: Radius.circular(15),
           ),
-          color: Colors.white, //background color of box
+          color: AppColors.white, //background color of box
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: AppColors.black.withOpacity(0.2),
               blurRadius: 2, // soften the shadow
               spreadRadius: 1.0, //extend the shadow
             ),
@@ -44,13 +45,17 @@ class DestinationScreen extends StatelessWidget {
             children: <Widget>[
               Text(
                 "Set stop location",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.blackLight,
+                ),
               ),
               Padding(
                 padding: EdgeInsets.only(top: 20, bottom: 20),
                 child: FlatButton(
-                  highlightColor: Color(int.parse("0xFFDCDCDC")),
-                  color: Color(int.parse("0xFFF4F4F6")),
+                  highlightColor: AppColors.highlightGrey,
+                  color: AppColors.inputGrey,
                   onPressed: () {
                     actionCallback(HomeState.PLAN_END, true);
                   },
@@ -68,7 +73,11 @@ class DestinationScreen extends StatelessWidget {
                           ),
                         ),
                         Spacer(flex: 1),
-                        Icon(Icons.search, size: 28),
+                        Icon(
+                          Icons.search,
+                          size: 28,
+                          color: AppColors.blackLight,
+                        ),
                       ],
                     ),
                   ),
@@ -78,7 +87,7 @@ class DestinationScreen extends StatelessWidget {
                 height: 55,
                 width: double.infinity,
                 child: RaisedButton(
-                  color: Colors.green,
+                  color: AppColors.greenButton,
                   elevation: 1,
                   shape: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -86,7 +95,7 @@ class DestinationScreen extends StatelessWidget {
                   ),
                   child: Text(
                     "CONFIRM",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    style: TextStyle(color: AppColors.white, fontSize: 16),
                   ),
                   onPressed: () async {
                     actionCallback(HomeState.RIDE, true);

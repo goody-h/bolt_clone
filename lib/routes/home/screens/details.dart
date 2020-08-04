@@ -1,4 +1,5 @@
 import 'package:bolt_clone/routes/home/home.dart';
+import 'package:bolt_clone/utils.dart';
 import 'package:flutter/material.dart';
 import '../models.dart';
 import '../utils.dart';
@@ -22,8 +23,8 @@ class DetailsScreen extends StatelessWidget {
       width: double.infinity,
       height: 82,
       child: FlatButton(
-        color: isSelected ? Colors.lightGreen : Colors.white,
-        highlightColor: Colors.lightGreen.withOpacity(0.4),
+        color: isSelected ? AppColors.greenLight : AppColors.white,
+        highlightColor: AppColors.greenHighlight,
         onPressed: () {
           gestureHandler.controller.forward();
         },
@@ -35,7 +36,7 @@ class DetailsScreen extends StatelessWidget {
               padding: EdgeInsets.only(right: 20),
               child: Icon(
                 icon,
-                color: Colors.grey,
+                color: AppColors.iconGrey,
                 size: 28,
               ),
             ),
@@ -47,7 +48,7 @@ class DetailsScreen extends StatelessWidget {
                   Text(title),
                   Text(
                     subTitle,
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: AppColors.textGreySub),
                   ),
                 ],
               ),
@@ -59,7 +60,7 @@ class DetailsScreen extends StatelessWidget {
                 Text(
                   "N 500",
                   style: TextStyle(
-                      color: Colors.grey,
+                      color: AppColors.textGreySub,
                       decoration: TextDecoration.lineThrough),
                 ),
               ],
@@ -82,7 +83,7 @@ class DetailsScreen extends StatelessWidget {
         IgnorePointer(
           child: GestureDetector(
             child: Container(
-              color: Colors.black.withOpacity(gestureHandler.lerp(0, 0.75)),
+              color: AppColors.black.withOpacity(gestureHandler.lerp(0, 0.75)),
               height: double.infinity,
               width: double.infinity,
             ),
@@ -109,10 +110,10 @@ class DetailsScreen extends StatelessWidget {
                   topLeft: Radius.circular(15),
                   topRight: Radius.circular(15),
                 ),
-                color: Colors.white, //background color of box
+                color: AppColors.white, //background color of box
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: AppColors.black.withOpacity(0.2),
                     blurRadius: 2, // soften the shadow
                     spreadRadius: 1.0, //extend the shadow
                   )
@@ -169,10 +170,10 @@ class DetailsScreen extends StatelessWidget {
             height: 135,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white, //background color of box
+              color: AppColors.white, //background color of box
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: AppColors.black.withOpacity(0.2),
                   blurRadius: 2, // soften the shadow
                   spreadRadius: 1.0, //extend the shadow
                 )
@@ -202,11 +203,11 @@ class DetailsScreen extends StatelessWidget {
                             Container(
                               child: Text("-40% promo",
                                   style: TextStyle(
-                                      color: Colors.white, fontSize: 12)),
+                                      color: AppColors.white, fontSize: 12)),
                               padding: EdgeInsets.only(
                                   left: 10, right: 10, top: 5, bottom: 5),
                               decoration: BoxDecoration(
-                                color: Colors.yellow,
+                                color: AppColors.orangeTag,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                             ),
@@ -220,7 +221,7 @@ class DetailsScreen extends StatelessWidget {
                         height: 55,
                         width: double.infinity,
                         child: RaisedButton(
-                          color: Colors.green,
+                          color: AppColors.greenButton,
                           elevation: 1,
                           shape: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
@@ -228,7 +229,8 @@ class DetailsScreen extends StatelessWidget {
                           ),
                           child: Text(
                             "SELECT LITE",
-                            style: TextStyle(color: Colors.white, fontSize: 16),
+                            style:
+                                TextStyle(color: AppColors.white, fontSize: 16),
                           ),
                           onPressed: () {
                             actionCallback(HomeState.CONFIRM, true);

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
 import 'package:bolt_clone/routes/home/screens/screens.dart';
+import 'package:bolt_clone/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -248,12 +249,12 @@ class HomeMainState extends State<HomeMain>
                   scale: 0.85,
                   origin: Offset(0, 0),
                   child: FloatingActionButton(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppColors.white,
                     onPressed: () => menu.onClick(context),
                     child: AnimatedIcon(
                       icon: AnimatedIcons.menu_arrow,
                       progress: menu.controller,
-                      color: Colors.black,
+                      color: AppColors.blackLight,
                     ),
                   ),
                 ),
@@ -271,11 +272,11 @@ class HomeMainState extends State<HomeMain>
                     child: Visibility(
                       child: FloatingActionButton(
                         heroTag: "location",
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppColors.white,
                         onPressed: camera.justifyCamera,
                         child: Icon(
                           Icons.my_location,
-                          color: Colors.black,
+                          color: AppColors.black,
                         ),
                         mini: true,
                       ),
