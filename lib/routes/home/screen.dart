@@ -171,7 +171,6 @@ class _HomeScreenState extends State<HomeScreen>
           case HomeState.CONFIRM:
             // set ride display
             return ReviewScreen(
-              isPickup: true,
               actionCallback: (action, setstate) {
                 _showAction(
                   action: action,

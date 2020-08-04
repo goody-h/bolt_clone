@@ -5,7 +5,6 @@ import '../../../resources/payment.dart';
 
 import 'package:data_repository/data_repository.dart';
 
-import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../blocs/blocs.dart';
 
@@ -14,12 +13,10 @@ class ReviewScreen extends StatelessWidget {
   ReviewScreen({
     Key key,
     this.actionCallback,
-    this.isPickup = false,
   }) : super(key: key);
 
   final HomeStateHandler actionCallback;
-  final bool isPickup;
-  static final double minHeight = 150;
+  static final double minHeight = 210;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +39,7 @@ class ReviewScreen extends StatelessWidget {
       child: Container(
         height: double.infinity,
         width: double.infinity,
+        padding: EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(15),
@@ -56,39 +54,76 @@ class ReviewScreen extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          children: <Widget>[
-            FlatButton(
-              child: Text("edit"),
-              onPressed: () {
-                if (!isPickup) {
-                  actionCallback(HomeState.PLAN_END, true);
-                } else {
-                  actionCallback(HomeState.PLAN_START, true);
-                }
-              },
-            ),
-            RaisedButton(
-              child: Text("Confirm"),
-              onPressed: () async {
-                if (!isPickup) {
-                  actionCallback(HomeState.RIDE, true);
-                } else {
-                  // Scaffold.of(context);
-                  // Navigator.of(context).push(MaterialPageRoute(
-                  //     builder: (BuildContext context) => HomePage()));
-                  var manager = PaymentProvider(handleStatus: (m) {
-                    _showMessage(context, m["message"]);
-                  });
-                  final state = BlocProvider.of<UserBloc>(context).state;
-                  print(state);
-                  if (state is UserLoaded) {
-                    await manager.checkout(context, Invoice(), state.user);
-                  }
-                }
-              },
-            ),
-          ],
+        child: SingleChildScrollView(
+          physics: NeverScrollableScrollPhysics(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                "Confirm pickup",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 12, bottom: 12),
+                child: Text("Pickup in 1 min  N850"),
+              ),
+              Divider(height: 1),
+              SizedBox(
+                height: 55,
+                width: double.infinity,
+                child: Row(
+                  children: <Widget>[
+                    Icon(Icons.album, size: 14, color: Colors.green),
+                    Container(width: 10),
+                    Text(
+                      'Unnamed Road',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Spacer(flex: 1),
+                    SizedBox(
+                      height: 55,
+                      width: 55,
+                      child: FlatButton(
+                        onPressed: () {
+                          actionCallback(HomeState.PLAN_START, true);
+                        },
+                        shape: CircleBorder(side: BorderSide.none),
+                        child: Icon(Icons.edit),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 55,
+                width: double.infinity,
+                child: RaisedButton(
+                  color: Colors.green,
+                  elevation: 1,
+                  shape: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  child: Text(
+                    "CONFIRM ORDER",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  onPressed: () async {
+                    var manager = PaymentProvider(handleStatus: (m) {
+                      _showMessage(context, m["message"]);
+                    });
+                    final state = BlocProvider.of<UserBloc>(context).state;
+                    print(state);
+                    if (state is UserLoaded) {
+                      await manager.checkout(context, Invoice(), state.user);
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
