@@ -245,9 +245,9 @@ class HomeMainState extends State<HomeMain>
             child: SafeArea(
               child: Padding(
                 padding: EdgeInsets.all(15),
-                child: Transform.scale(
-                  scale: 0.85,
-                  origin: Offset(0, 0),
+                child: SizedBox(
+                  height: 50,
+                  width: 50,
                   child: FloatingActionButton(
                     backgroundColor: AppColors.white,
                     onPressed: () => menu.onClick(context),
