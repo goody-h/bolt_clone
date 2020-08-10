@@ -532,7 +532,7 @@ class RouteController {
   RouteController({this.trip}) {
     trip.asBroadcastStream().listen((state) async {
       if (state is TripRequest &&
-          state.request.destination != null &&
+          state.request.stops != null &&
           state.request.pickUp != null &&
           state.request.distance == null) {
         // calculate distance
@@ -739,7 +739,8 @@ class HomeMainScreen extends InheritedWidget {
       final pVectors = [myLocation];
 
       if (trip is TripRequest) {
-        pVectors.addAll([trip.request.destination, trip.request.pickUp]
+        final locations = [trip.request.pickUp]..addAll(trip.request.stops);
+        pVectors.addAll(locations
             .where((p) => p != null)
             .map((p) => LatLng(p.latitude, p.longitude)));
       }
