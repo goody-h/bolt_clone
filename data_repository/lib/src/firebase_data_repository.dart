@@ -126,11 +126,13 @@ class FirebaseDataRepository implements DataRepository {
         "tier": "lite",
         "method": "card",
         "distance": 2121222232,
-        "destination": {
-          "longitude": 1121.212121212,
-          "latitude": 22221.323232323,
-          "address": "Alakahia",
-        },
+        "stops": [
+          {
+            "longitude": 1121.212121212,
+            "latitude": 22221.323232323,
+            "address": "Alakahia",
+          },
+        ],
         "pickup": {
           "longitude": 1121.212121212,
           "latitude": 22221.323232323,

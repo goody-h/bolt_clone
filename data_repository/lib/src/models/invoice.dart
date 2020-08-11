@@ -52,7 +52,7 @@ class InvoiceData {
   InvoiceData({
     this.tier,
     this.pickUp = const Position(),
-    this.destination = const Position(),
+    this.stops,
     this.distance,
     this.time,
     this.method = PaymentMethod.newcard,
@@ -62,24 +62,59 @@ class InvoiceData {
       : this(
             tier: data["tier"],
             pickUp: Position.fromJson(data["pickup"]),
-            destination: Position.fromJson(data["destination"]),
+            stops: (data["stops"] as List<Map<String, dynamic>>)
+                .map((d) => Position.fromJson(d))
+                .toList(),
             distance: data["distance"],
             time: data["time"],
             method: paymentMethodFromString(data["method"]));
 
   String tier;
   Position pickUp;
-  Position destination;
+  List<Position> stops = List.filled(2, null, growable: true);
   double distance;
   int time;
   PaymentMethod method;
+
+  addStop(int index, Position position) {
+    stops[index] = position;
+    if (!stops.contains(null) && stops.length < 3) {
+      stops.add(null);
+    }
+  }
+
+  removeStop(int index) {
+    if (![0, stops.length - 1].contains(index)) {
+      stops.removeAt(index);
+    }
+  }
+
+  resetStops() {
+    stops = List.filled(2, null, growable: true);
+  }
+
+  foldStops() {
+    final list = <Position>[];
+    for (var item in stops) {
+      if (item != null) {
+        list.add(item);
+      }
+    }
+    if (list.length == 0) {
+      list.add(null);
+    }
+    if (list.length < 3) {
+      list.add(null);
+    }
+    stops = list;
+  }
 
   Map<String, dynamic> toJson() {
     return {
       "tier": tier,
       "method": method.toString().split('.')[1],
       "distance": distance,
-      "destination": destination.toJson(),
+      "stops": stops?.where((d) => d != null)?.map((d) => d.toJson())?.toList(),
       "pickup": pickUp.toJson(),
       "time": time
     };
