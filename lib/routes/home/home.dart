@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
-import 'package:bolt_clone/routes/home/screens/screens.dart';
 import 'package:bolt_clone/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../models/types.dart';
-import './screen.dart';
+import 'screen.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/blocs.dart';
@@ -457,7 +456,7 @@ class CameraController {
 class InsetController {
   AnimationController controller;
   final streamController = StreamController<double>.broadcast();
-  double _baseBottomInset = DefaultScreen.minHeight;
+  double _baseBottomInset = DefaultSearchScreen.minHeight;
   String tag;
   Completer<bool> hasInit;
 
@@ -465,7 +464,8 @@ class InsetController {
     setBaseInset("default", _baseBottomInset, shouldAnimate: true);
   }
 
-  double get inset => _baseBottomInset * controller.value;
+  // double get inset => _baseBottomInset * controller.value;
+  double get inset => _baseBottomInset;
 
   Stream<double> get stream => streamController.stream;
 
@@ -627,7 +627,7 @@ class HomeMainScreen extends InheritedWidget {
     if (!isChanging) {
       menu.setCanPop(false);
       locationBtn.isVisible = true;
-      inset.setBaseInset("default", DefaultScreen.minHeight,
+      inset.setBaseInset("default", DefaultSearchScreen.minHeight,
           shouldAnimate: !isExpanded);
       marker.showDrivers = true;
       marker.showHomeAndWork = true;
@@ -673,8 +673,7 @@ class HomeMainScreen extends InheritedWidget {
 
     menu.setCanPop(true);
     locationBtn.isVisible = false;
-    inset.setBaseInset("dest", DestinationScreen.minHeight,
-        shouldAnimate: false);
+    inset.setBaseInset("dest", MapPickScreen.minHeight, shouldAnimate: false);
     marker.showDrivers = false;
     marker.showHomeAndWork = false;
     marker.showPickupAndDestination = false;
@@ -700,7 +699,7 @@ class HomeMainScreen extends InheritedWidget {
 
     menu.setCanPop(true);
     locationBtn.isVisible = true;
-    inset.setBaseInset("pick", PickupScreen.minHeight, shouldAnimate: false);
+    inset.setBaseInset("pick", MapPickScreen.minHeight, shouldAnimate: false);
     marker.showDrivers = false;
     marker.showHomeAndWork = false;
     marker.showPickupAndDestination = false;
@@ -762,7 +761,7 @@ class HomeMainScreen extends InheritedWidget {
 
     menu.setCanPop(true);
     locationBtn.isVisible = true;
-    inset.setBaseInset("review", ReviewScreen.minHeight, shouldAnimate: true);
+    inset.setBaseInset("review", MapPickScreen.minHeight, shouldAnimate: true);
     marker.showDrivers = false;
     marker.showHomeAndWork = false;
     marker.showPickupAndDestination = false;
