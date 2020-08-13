@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
+import 'package:bolt_clone/routes/home/widgets/drop_pin.dart';
 import 'package:bolt_clone/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -146,7 +147,7 @@ class HomeMainState extends State<HomeMain>
 
     location = LocationController(camera);
 
-    pin = SelectionPinController();
+    pin = SelectionPinController(setState: () => setState(() {}));
 
     route = RouteController(trip: trip);
 
@@ -237,6 +238,20 @@ class HomeMainState extends State<HomeMain>
                     );
                   });
             },
+          ),
+          Visibility(
+            visible: pin.isVisible,
+            child: Container(
+              height: double.infinity,
+              width: double.infinity,
+              padding: EdgeInsets.only(bottom: inset._baseBottomInset),
+              child: Center(
+                child: DropPin(
+                  isDown: pin.isDown,
+                  isDestination: !pin.isPickup,
+                ),
+              ),
+            ),
           ),
           Positioned(
             top: 0,
@@ -346,11 +361,14 @@ class MenuButtonController {
 
 class SelectionPinController {
   bool isVisible = false;
-  bool isPinMoving = false;
-  bool isPickup;
+  bool isDown = true;
+  bool isPickup = false;
   LatLng position;
   LatLng _positionHolder;
   String pinAddress;
+  final VoidCallback setState;
+
+  SelectionPinController({this.setState});
 
   initPin({bool isPickup, LatLng position}) {
     this.isPickup = isPickup;
@@ -366,10 +384,18 @@ class SelectionPinController {
     _positionHolder = null;
   }
 
+  setIsDown(bool isDown) {
+    if (this.isDown != isDown) {
+      this.isDown = isDown;
+      setState();
+    }
+  }
+
   movePinPosition(LatLng position) {
     print("move pin $position");
     if (isVisible) {
       this._positionHolder = position;
+      setIsDown(false);
     }
   }
 
@@ -380,6 +406,7 @@ class SelectionPinController {
         // send event to TripBloc
         _positionToAddress();
       }
+      setIsDown(true);
     }
   }
 
