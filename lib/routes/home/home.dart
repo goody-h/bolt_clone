@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
+import 'package:bolt_clone/routes/home/map.dart';
 import 'package:bolt_clone/routes/home/widgets/drop_pin.dart';
 import 'package:bolt_clone/utils.dart';
 import 'package:flutter/material.dart';
@@ -181,15 +182,10 @@ class HomeMainState extends State<HomeMain>
     super.dispose();
   }
 
-  // Initial location of the Map view
-  CameraPosition _initialLocation =
-      CameraPosition(target: LatLng(0.0, 0.0), zoom: 10);
-
   Completer<GoogleMapController> mapController = Completer();
 
   @override
   Widget build(BuildContext context) {
-    print("render");
     return MultiBlocProvider(
       providers: [
         BlocProvider<TripBloc>(
@@ -200,44 +196,17 @@ class HomeMainState extends State<HomeMain>
       ],
       child: Stack(
         children: <Widget>[
-          BlocBuilder<TripBloc, TripState>(
-            builder: (context, state) {
-              if (!loadMap.isCompleted) {
-                return Container();
-              }
-              final markers = marker.getMarkers(context, state);
-
-              final polylines = route.getRoute();
-
-              return StreamBuilder<double>(
-                  initialData: inset._baseBottomInset,
-                  stream: inset.stream,
-                  builder: (context, data) {
-                    return GoogleMap(
-                      initialCameraPosition: _initialLocation,
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: false,
-                      mapType: MapType.normal,
-                      zoomGesturesEnabled: true,
-                      zoomControlsEnabled: false,
-                      onMapCreated: (GoogleMapController controller) async {
-                        mapController.complete(controller);
-                      },
-                      onCameraMove: (CameraPosition position) {
-                        pin.movePinPosition(position.target);
-                      },
-                      onCameraIdle: () {
-                        pin.updatePinPosition(context);
-                      },
-                      padding: EdgeInsets.only(bottom: inset._baseBottomInset),
-                      markers:
-                          markers != null ? Set<Marker>.from(markers) : null,
-                      polylines: polylines != null
-                          ? Set<Polyline>.from(polylines)
-                          : null,
-                    );
-                  });
-            },
+          Positioned.fill(
+            child: Map(
+              loadMap: loadMap.isCompleted,
+              onLoad: (GoogleMapController controller) async {
+                mapController.complete(controller);
+              },
+              pin: pin,
+              marker: marker,
+              route: route,
+              baseBottomInset: inset._baseBottomInset,
+            ),
           ),
           Visibility(
             visible: pin.isVisible,
@@ -362,16 +331,18 @@ class MenuButtonController {
 class SelectionPinController {
   bool isVisible = false;
   bool isDown = true;
-  bool isPickup = false;
   LatLng position;
   LatLng _positionHolder;
   String pinAddress;
+  AddressSearchType type;
   final VoidCallback setState;
 
   SelectionPinController({this.setState});
 
-  initPin({bool isPickup, LatLng position}) {
-    this.isPickup = isPickup;
+  bool get isPickup => !(type?.isDestination ?? true);
+
+  initPin({AddressSearchType type, LatLng position}) {
+    this.type = type;
     this.isVisible = true;
     this.position = position;
     _positionToAddress();
@@ -695,7 +666,7 @@ class HomeMainScreen extends InheritedWidget {
     }
   }
 
-  setChooseDestinationView() async {
+  setChooseDestinationView(AddressSearchType type) async {
     final myLocation = await location.location;
 
     menu.setCanPop(true);
@@ -707,7 +678,7 @@ class HomeMainScreen extends InheritedWidget {
     // more marker update
 
     location.canMoveMap = false;
-    pin.initPin(isPickup: false, position: myLocation);
+    pin.initPin(type: type, position: myLocation);
     route.isVisible = false;
     setState();
 
@@ -733,7 +704,7 @@ class HomeMainScreen extends InheritedWidget {
     // more marker update
 
     location.canMoveMap = false;
-    pin.initPin(isPickup: true, position: myLocation);
+    pin.initPin(type: AddressSearchType(addressIndex: 0), position: myLocation);
     route.isVisible = false;
     setState();
 
@@ -795,7 +766,7 @@ class HomeMainScreen extends InheritedWidget {
     // more marker update
 
     location.canMoveMap = false;
-    pin.initPin(isPickup: true, position: position);
+    pin.initPin(type: AddressSearchType(addressIndex: -1), position: position);
     route.isVisible = false;
     setState();
 

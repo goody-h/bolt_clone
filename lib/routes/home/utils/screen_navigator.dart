@@ -155,7 +155,7 @@ class ScreenNavigator {
       if (data.isReview) {
         home.setReviewView();
       } else if (data.type.isDestination) {
-        home.setChooseDestinationView();
+        home.setChooseDestinationView(data.type);
       } else {
         home.setCoosePickupView();
       }
