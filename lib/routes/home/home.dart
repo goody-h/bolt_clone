@@ -463,7 +463,7 @@ class CameraController {
 class InsetController {
   AnimationController controller;
   final streamController = StreamController<double>.broadcast();
-  double _baseBottomInset = DefaultSearchScreen.minHeight;
+  double _baseBottomInset = DefaultSearchScreen.minHeight2;
   String tag;
   Completer<bool> hasInit;
 
@@ -626,7 +626,12 @@ class HomeMainScreen extends InheritedWidget {
 
   final mapDuration = Duration(milliseconds: 700);
 
-  setDefaultView({bool isExpanded = false, bool isChanging = false}) async {
+  setDefaultView({
+    bool isExpanded = false,
+    bool isChanging = false,
+    double insetHeight = DefaultSearchScreen.minHeight2,
+    String tag = "default",
+  }) async {
     if (!isExpanded) {
       final myLocation = await location.location;
       getTrip().add(TripRequestInit(myLocation));
@@ -634,8 +639,7 @@ class HomeMainScreen extends InheritedWidget {
     if (!isChanging) {
       menu.setCanPop(false);
       locationBtn.isVisible = true;
-      inset.setBaseInset("default", DefaultSearchScreen.minHeight,
-          shouldAnimate: !isExpanded);
+      inset.setBaseInset(tag, insetHeight, shouldAnimate: !isExpanded);
       marker.showDrivers = true;
       marker.showHomeAndWork = true;
       marker.showPickupAndDestination = false;
@@ -725,12 +729,15 @@ class HomeMainScreen extends InheritedWidget {
     );
   }
 
-  setDetailsView({bool isChanging = false}) async {
+  setDetailsView({
+    bool isChanging = false,
+    double insetHeight = DetailsScreen.minHeight,
+    String tag = "details",
+  }) async {
     if (!isChanging) {
       menu.setCanPop(true);
       locationBtn.isVisible = false;
-      inset.setBaseInset("details", DetailsScreen.minHeight,
-          shouldAnimate: true);
+      inset.setBaseInset(tag, insetHeight, shouldAnimate: true);
       marker.showDrivers = true;
       marker.showHomeAndWork = false;
       marker.showPickupAndDestination = true;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
+import 'package:bolt_clone/routes/home/home.dart';
 import 'package:bolt_clone/routes/home/models/default_screen_data.dart';
 import 'package:bolt_clone/routes/home/screens/screens.dart';
 import 'package:bolt_clone/routes/home/screens/widgets/location_item.dart';
@@ -78,6 +79,7 @@ class DefaultSearchScreen extends Screen {
       pickupController.resultStream.listen(_updateTitle),
       destinationController.resultStream.listen(_updateTitle),
     ];
+    hasData = !data.isHome;
   }
 
   _updateTitle(_) {
@@ -236,6 +238,9 @@ class DefaultSearchScreen extends Screen {
 
   Stream<String> get titleStream => searchController.stream.asBroadcastStream();
 
+  // TODO remove mock implementation
+  bool hasData = false;
+
   Widget get body => FadeTransition(
         // TODO FIX ANIMATION
         opacity: AlwaysStoppedAnimation(1),
@@ -282,7 +287,7 @@ class DefaultSearchScreen extends Screen {
                     ],
                   );
                 },
-                itemCount: isExpanded ? 5 : 3,
+                itemCount: hasData ? (isExpanded ? 5 : 3) : 0,
               );
             },
           ),
@@ -304,9 +309,10 @@ class DefaultSearchScreen extends Screen {
 
   @override
   double getMinHeight(BuildContext context) =>
-      data.isHome ? minHeight : getMaxHeight(context);
+      data.isHome ? (hasData ? minHeight : minHeight2) : getMaxHeight(context);
 
-  static final double minHeight = 320;
+  static const double minHeight = 320;
+  static const double minHeight2 = 220;
 
   @override
   void startEntry() {
@@ -316,6 +322,14 @@ class DefaultSearchScreen extends Screen {
       gestureController.value = 0.0;
     }
     _handleController();
+
+    // TODO remove mock implementation of height change
+    if (data.isHome)
+      Future.delayed(Duration(microseconds: 1000), () {
+        hasData = true;
+        HomeMainScreen.of(context()).setDefaultView(
+            insetHeight: getMinHeight(context()), tag: "default2");
+      });
   }
 
   @override

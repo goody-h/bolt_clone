@@ -42,6 +42,15 @@ class ScreenNavigator {
   List<_ScreenData> get currentStack =>
       subStack.isNotEmpty ? subStack : mainStack;
 
+  modifyPayload<T extends Screen>(dynamic payload) {
+    if (last.type == T) {
+      currentStack[currentStack.length - 1] = _ScreenData(
+        type: T,
+        payload: payload,
+      );
+    }
+  }
+
   push<T extends Screen>({@required int stackType, dynamic payload}) {
     final shouldSetScreen = T != last.type;
 
@@ -105,6 +114,7 @@ class ScreenNavigator {
         context: context,
         gestureController: gestureController,
         navigator: this,
+        invoiceCount: last.payload ?? 2,
       );
     } else if (last.type == MapPickScreen) {
       _currentScreen = MapPickScreen(
@@ -149,7 +159,9 @@ class ScreenNavigator {
             isChanging: !isNewScreen, isExpanded: data.expanded);
       }
     } else if (type == DetailsScreen) {
-      home.setDetailsView(isChanging: !isNewScreen);
+      home.setDetailsView(
+          isChanging: !isNewScreen,
+          insetHeight: DetailsScreen.getHeight(last.payload));
     } else if (type == MapPickScreen) {
       final data = last.payload as MapPickData;
       if (data.isReview) {

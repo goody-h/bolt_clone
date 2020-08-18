@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:bolt_clone/blocs/user_bloc/user.dart';
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
+import 'package:bolt_clone/routes/home/home.dart';
 import 'package:bolt_clone/routes/home/screens/widgets/invoice_item.dart';
 import 'package:bolt_clone/routes/home/utils/screen_navigator.dart';
 import 'package:bolt_clone/utils.dart';
@@ -18,6 +19,7 @@ class DetailsScreen extends Screen {
     AnimationController transitionController,
     AnimationController gestureController,
     ScreenNavigator navigator,
+    this.invoiceCount,
   }) : super(
           navigator: navigator,
           context: context,
@@ -49,11 +51,25 @@ class DetailsScreen extends Screen {
   bool get isExpanded => gestureController.value > 0.5;
   static const double footerHeight = 135;
 
+  // TODO REMOVE TEST IMPLEMENTATION
+  bool hasThree = false;
+
   Widget body(TripState state) {
     if (state is TripRequest) {
       //TODO get invoices and current tier
       final invoices = state.invoices;
       final tier = state.activeTier;
+    }
+
+    // TODO REMOVE TEST IMPLEMENTATION
+    if (!hasThree) {
+      hasThree = true;
+      Future.delayed(Duration(milliseconds: 500), () {
+        invoiceCount = 3;
+        navigator.modifyPayload<DetailsScreen>(3);
+        HomeMainScreen.of(context()).setDetailsView(
+            insetHeight: getMinHeight(context()), tag: "details3");
+      });
     }
 
     buttonText = "CONFIRM LITE";
@@ -199,14 +215,21 @@ class DetailsScreen extends Screen {
     );
   }
 
+  int invoiceCount;
+
   @override
   double getMaxHeight(BuildContext context) =>
       Screen.getScreenHeight(context) - 85;
 
   @override
-  double getMinHeight(BuildContext context) => minHeight;
+  double getMinHeight(BuildContext context) =>
+      (invoiceCount ?? 2) < 3 ? minHeight : minHeight3;
 
-  static final double minHeight = 320;
+  static double getHeight(int count) =>
+      (count ?? 2) < 3 ? minHeight : minHeight3;
+
+  static const double minHeight = 320;
+  static const double minHeight3 = 350;
 
   @override
   void startEntry() {
