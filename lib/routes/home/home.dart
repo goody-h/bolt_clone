@@ -270,6 +270,12 @@ class HomeMainState extends State<HomeMain>
               );
             },
           ),
+          Positioned.fill(
+            child: AbsorbPointer(
+              absorbing: pin.isInitializing,
+              child: SizedBox.expand(),
+            ),
+          ),
           HomeMainScreen(
             child: HomeScreen(),
             context: context,
@@ -335,6 +341,7 @@ class SelectionPinController {
   LatLng _positionHolder;
   String pinAddress;
   AddressSearchType type;
+  bool isInitializing = false;
   final VoidCallback setState;
 
   SelectionPinController({this.setState});
@@ -345,6 +352,7 @@ class SelectionPinController {
     this.type = type;
     this.isVisible = true;
     this.position = position;
+    isInitializing = true;
     _positionToAddress();
   }
 
@@ -373,10 +381,11 @@ class SelectionPinController {
   updatePinPosition(BuildContext context) {
     print("set pin $position");
     if (isVisible) {
-      if (position != _positionHolder) {
+      if (position != _positionHolder && !isInitializing) {
         // send event to TripBloc
         _positionToAddress();
       }
+      isInitializing = false;
       setIsDown(true);
     }
   }
