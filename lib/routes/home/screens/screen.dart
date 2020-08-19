@@ -18,9 +18,20 @@ abstract class Screen {
   final AnimationController gestureController;
   final ScreenNavigator navigator;
 
+  bool hasInit = false;
+
   // Transition methods
   Future<void> startExit();
-  void startEntry();
+  void startEntry() {
+    Future.delayed(
+      Duration(milliseconds: initDuration),
+      () {
+        hasInit = true;
+        onInit();
+        gestureController.notifyListeners();
+      },
+    );
+  }
 
   // Dimensions method
   double getMinHeight(BuildContext context);
@@ -30,7 +41,6 @@ abstract class Screen {
 
   // Animation functions
   bool get useGesture => false;
-  Animation<Offset> Function(double) get useSlide => null;
 
   VoidCallback get useLowerSheet => null;
   ForeSheetData get useForeSheet => null;
@@ -38,6 +48,14 @@ abstract class Screen {
 
   // bottom sheet
   Widget getBottomSheet(BuildContext context);
+
+  Duration getTransitionDuration() => Duration.zero;
+
+  void onInit() {}
+
+  int get initDuration => 50;
+
+  double getBottomInset() => null;
 
   void dispose() {}
 }

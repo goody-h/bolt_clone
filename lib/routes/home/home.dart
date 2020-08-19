@@ -106,7 +106,7 @@ class HomeMainState extends State<HomeMain>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   TripBloc trip;
   MenuButtonController menu;
-  InsetController inset;
+  MapDataController map;
   CameraController camera;
   LocationButtonController locationBtn;
   MarkerController marker;
@@ -129,14 +129,7 @@ class HomeMainState extends State<HomeMain>
       registerPop: widget.registerPop,
     );
 
-    inset = InsetController(
-      controller: AnimationController(
-        vsync: this,
-        value: 0.4,
-        lowerBound: 0.4,
-        upperBound: 1,
-        duration: Duration(milliseconds: 300),
-      ),
+    map = MapDataController(
       hasInit: hasInit,
     );
 
@@ -167,7 +160,7 @@ class HomeMainState extends State<HomeMain>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print(state);
     if (state == AppLifecycleState.resumed) {
-      setState(() {});
+      map.refresh();
     }
   }
 
@@ -176,7 +169,7 @@ class HomeMainState extends State<HomeMain>
 
   @override
   void dispose() {
-    inset.dispose();
+    map.dispose();
     menu.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -198,14 +191,14 @@ class HomeMainState extends State<HomeMain>
         children: <Widget>[
           Positioned.fill(
             child: Map(
-              loadMap: loadMap.isCompleted,
+              controller: map,
+              loadMap: loadMap,
               onLoad: (GoogleMapController controller) async {
                 mapController.complete(controller);
               },
               pin: pin,
               marker: marker,
               route: route,
-              baseBottomInset: inset._baseBottomInset,
             ),
           ),
           Visibility(
@@ -213,7 +206,7 @@ class HomeMainState extends State<HomeMain>
             child: Container(
               height: double.infinity,
               width: double.infinity,
-              padding: EdgeInsets.only(bottom: inset._baseBottomInset),
+              padding: EdgeInsets.only(bottom: map.secondaryInset),
               child: Center(
                 child: DropPin(
                   isDown: pin.isDown,
@@ -244,44 +237,12 @@ class HomeMainState extends State<HomeMain>
               ),
             ),
           ),
-          AnimatedBuilder(
-            animation: inset.controller,
-            builder: (context, child) {
-              return Stack(
-                children: <Widget>[
-                  Positioned(
-                    bottom: 15 + inset.inset,
-                    right: 15,
-                    child: Visibility(
-                      child: FloatingActionButton(
-                        heroTag: "location",
-                        backgroundColor: AppColors.white,
-                        onPressed: camera.justifyCamera,
-                        child: Icon(
-                          Icons.my_location,
-                          color: AppColors.black,
-                        ),
-                        mini: true,
-                      ),
-                      visible: locationBtn.isVisible,
-                    ),
-                  )
-                ],
-              );
-            },
-          ),
-          Positioned.fill(
-            child: AbsorbPointer(
-              absorbing: pin.isInitializing,
-              child: SizedBox.expand(),
-            ),
-          ),
           HomeMainScreen(
             child: HomeScreen(),
             context: context,
             trip: trip,
             menu: menu,
-            inset: inset,
+            map: map,
             camera: camera,
             locationBtn: locationBtn,
             marker: marker,
@@ -460,40 +421,38 @@ class CameraController {
   }
 }
 
-class InsetController {
-  AnimationController controller;
-  final streamController = StreamController<double>.broadcast();
-  double _baseBottomInset = DefaultSearchScreen.minHeight2;
-  String tag;
+class MapDataController {
+  final streamController = StreamController<MapData>.broadcast();
   Completer<bool> hasInit;
+  MapData data;
+  Random rnd = Random();
 
-  InsetController({this.controller, this.hasInit}) {
-    setBaseInset("default", _baseBottomInset, shouldAnimate: true);
+  MapDataController({this.hasInit}) {
+    data = MapData(
+      mapTag: "g-map",
+      bottomPadding: 0,
+      secondaryPadding: 0,
+    );
+    setBaseInset(0);
   }
 
-  // double get inset => _baseBottomInset * controller.value;
-  double get inset => _baseBottomInset;
+  double get inset => data.bottomPadding;
+  double get secondaryInset => data.secondaryPadding;
 
-  Stream<double> get stream => streamController.stream;
+  Stream<MapData> get stream => streamController.stream;
 
-  setBaseInset(String tag, double inset, {bool shouldAnimate}) async {
-    if (tag != this.tag) {
-      this.tag = tag;
-      this._baseBottomInset = inset;
-      await hasInit.future;
-      streamController.sink.add(inset);
-      if (shouldAnimate) {
-        controller.value = 0.4;
-        controller.forward();
-      } else {
-        controller.value = 0.99;
-        controller.value = 1;
-      }
-    }
+  setBaseInset(double inset, {double secondaryInset}) async {
+    this.data.bottomPadding = inset;
+    this.data.secondaryPadding = secondaryInset ?? inset;
+    await hasInit.future;
+    streamController.sink.add(data);
+  }
+
+  refresh() {
+    streamController.sink.add(data);
   }
 
   dispose() {
-    controller.dispose();
     streamController.close();
   }
 }
@@ -595,7 +554,7 @@ class HomeMainScreen extends InheritedWidget {
     this.context,
     this.menu,
     this.setState,
-    this.inset,
+    this.map,
     this.camera,
     this.locationBtn,
     this.marker,
@@ -607,7 +566,7 @@ class HomeMainScreen extends InheritedWidget {
   final TripBloc trip;
   final BuildContext context;
   final MenuButtonController menu;
-  final InsetController inset;
+  final MapDataController map;
   final VoidCallback setState;
   final LocationButtonController locationBtn;
   final CameraController camera;
@@ -630,7 +589,6 @@ class HomeMainScreen extends InheritedWidget {
     bool isExpanded = false,
     bool isChanging = false,
     double insetHeight = DefaultSearchScreen.minHeight2,
-    String tag = "default",
   }) async {
     if (!isExpanded) {
       final myLocation = await location.location;
@@ -639,7 +597,6 @@ class HomeMainScreen extends InheritedWidget {
     if (!isChanging) {
       menu.setCanPop(false);
       locationBtn.isVisible = true;
-      inset.setBaseInset(tag, insetHeight, shouldAnimate: !isExpanded);
       marker.showDrivers = true;
       marker.showHomeAndWork = true;
       marker.showPickupAndDestination = false;
@@ -647,6 +604,7 @@ class HomeMainScreen extends InheritedWidget {
       pin.disable();
       location.canMoveMap = true;
       route.isVisible = false;
+      map.setBaseInset(insetHeight /*, shouldAnimate: !isExpanded */);
       setState();
 
       final myLocation = await location.location;
@@ -684,7 +642,6 @@ class HomeMainScreen extends InheritedWidget {
 
     menu.setCanPop(true);
     locationBtn.isVisible = false;
-    inset.setBaseInset("dest", MapPickScreen.minHeight, shouldAnimate: false);
     marker.showDrivers = false;
     marker.showHomeAndWork = false;
     marker.showPickupAndDestination = false;
@@ -693,6 +650,8 @@ class HomeMainScreen extends InheritedWidget {
     location.canMoveMap = false;
     pin.initPin(type: type, position: myLocation);
     route.isVisible = false;
+    map.setBaseInset(MapPickScreen.minHeight,
+        secondaryInset: MapPickScreen.minHeight);
     setState();
 
     final pVectors = [myLocation];
@@ -710,7 +669,6 @@ class HomeMainScreen extends InheritedWidget {
 
     menu.setCanPop(true);
     locationBtn.isVisible = true;
-    inset.setBaseInset("pick", MapPickScreen.minHeight, shouldAnimate: false);
     marker.showDrivers = false;
     marker.showHomeAndWork = false;
     marker.showPickupAndDestination = false;
@@ -719,6 +677,7 @@ class HomeMainScreen extends InheritedWidget {
     location.canMoveMap = false;
     pin.initPin(type: AddressSearchType(addressIndex: 0), position: myLocation);
     route.isVisible = false;
+    map.setBaseInset(0, secondaryInset: MapPickScreen.minHeight);
     setState();
 
     final pVectors = [myLocation];
@@ -732,12 +691,10 @@ class HomeMainScreen extends InheritedWidget {
   setDetailsView({
     bool isChanging = false,
     double insetHeight = DetailsScreen.minHeight,
-    String tag = "details",
   }) async {
     if (!isChanging) {
       menu.setCanPop(true);
       locationBtn.isVisible = false;
-      inset.setBaseInset(tag, insetHeight, shouldAnimate: true);
       marker.showDrivers = true;
       marker.showHomeAndWork = false;
       marker.showPickupAndDestination = true;
@@ -745,6 +702,7 @@ class HomeMainScreen extends InheritedWidget {
       pin.disable();
       location.canMoveMap = true;
       route.isVisible = true;
+      map.setBaseInset(insetHeight);
       setState();
 
       final myLocation = await location.location;
@@ -775,7 +733,6 @@ class HomeMainScreen extends InheritedWidget {
 
     menu.setCanPop(true);
     locationBtn.isVisible = true;
-    inset.setBaseInset("review", MapPickScreen.minHeight, shouldAnimate: true);
     marker.showDrivers = false;
     marker.showHomeAndWork = false;
     marker.showPickupAndDestination = false;
@@ -784,6 +741,7 @@ class HomeMainScreen extends InheritedWidget {
     location.canMoveMap = false;
     pin.initPin(type: AddressSearchType(addressIndex: -1), position: position);
     route.isVisible = false;
+    map.setBaseInset(0, secondaryInset: MapPickScreen.minHeight);
     setState();
 
     final pVectors = [position];

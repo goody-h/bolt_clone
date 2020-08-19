@@ -1,5 +1,6 @@
 import 'package:bolt_clone/blocs/blocs.dart';
 import 'package:bolt_clone/resources/payment.dart';
+import 'package:bolt_clone/routes/home/home.dart';
 import 'package:bolt_clone/routes/home/models/map_pick_data.dart';
 import 'package:bolt_clone/routes/home/screens/screens.dart';
 import 'package:bolt_clone/routes/home/utils/screen_navigator.dart';
@@ -160,20 +161,41 @@ class MapPickScreen extends Screen {
   double getMaxHeight(BuildContext context) => getMinHeight(context);
 
   @override
-  double getMinHeight(BuildContext context) => minHeight;
+  double getMinHeight(BuildContext context) =>
+      hasInit || data.type.isDestination ? minHeight : 0;
+
+  @override
+  Duration getTransitionDuration() {
+    if (!hasInit) {
+      return super.getTransitionDuration();
+    }
+    return Duration(milliseconds: 200);
+  }
+
+  @override
+  void onInit() {
+    if (!data.type.isDestination) {
+      HomeMainScreen.of(context()).map.setBaseInset(getMinHeight(context()));
+    }
+  }
 
   @override
   void startEntry() {
+    super.startEntry();
     gestureController.value = 0;
     FocusManager.instance.primaryFocus.unfocus();
   }
+
+  @override
+  double getBottomInset() => getMinHeight(context());
 
   @override
   Future<void> startExit() async {}
 
   @override
   ForeSheetData get useForeSheet => ForeSheetData(
-        offsetHeight: getMaxHeight(context()),
+        offsetHeight: minHeight,
+        height: minHeight,
         text: () => data.isReview ? "CONFIRM ORDER" : "CONFIRM",
         onTap: () async {
           if (data.canViewDetails) {
@@ -193,7 +215,6 @@ class MapPickScreen extends Screen {
           }
           // TODO FIX BUTTON CLICK
         },
-        useSlide: null,
       );
 
   _showMessage(BuildContext context, String message,

@@ -7,29 +7,41 @@ class ForeSheet extends StatelessWidget {
     this.text,
     this.offsetHeight = 85,
     this.revealValue = 0,
-    this.useSlide,
     this.onTap,
     this.textStream,
     this.reverseGesture,
+    this.height,
+    this.isAnimating,
+    this.duration = Duration.zero,
+    this.gestureOffset,
   });
 
   final String Function() text;
   final Stream<String> textStream;
   final double revealValue;
   final double offsetHeight;
-  final Animation<Offset> Function() useSlide;
+  final double gestureOffset;
   final VoidCallback onTap;
   final bool reverseGesture;
+  final double height;
+  final bool isAnimating;
+  final Duration duration;
 
-  double get bottomOffset => -offsetHeight + 85;
+  double get bottomOffset =>
+      (isAnimating ? -(gestureOffset ?? offsetHeight) : -offsetHeight) + 85;
 
   @override
   Widget build(BuildContext context) {
     print(text());
-    Widget body = Container(
+    Widget body = AnimatedContainer(
+      duration: !isAnimating ? (duration ?? Duration.zero) : Duration.zero,
       height: !reverseGesture
-          ? lerpDouble(offsetHeight, 0, revealValue)
-          : lerpDouble(0, offsetHeight, revealValue),
+          ? lerpDouble(isAnimating ? (gestureOffset ?? offsetHeight) : height,
+              0, revealValue)
+          : lerpDouble(
+              0,
+              isAnimating ? (gestureOffset ?? offsetHeight) : height,
+              revealValue),
       width: double.infinity,
       child: SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
@@ -68,10 +80,6 @@ class ForeSheet extends StatelessWidget {
         ),
       ),
     );
-
-    if (useSlide != null) {
-      body = SlideTransition(position: useSlide(), child: body);
-    }
 
     return Positioned(
       left: 0,

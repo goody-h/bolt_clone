@@ -36,6 +36,7 @@ class ScreenNavigator {
 
   init() {
     hasInit = true;
+    beginTransition(null, true);
     onSetScreen(last.type, true);
   }
 
@@ -101,7 +102,7 @@ class ScreenNavigator {
   }
 
   setScreen() {
-    final current = _currentScreen;
+    Screen _currentScreen;
     if (last.type == DefaultSearchScreen) {
       _currentScreen = DefaultSearchScreen(
         context: context,
@@ -138,12 +139,15 @@ class ScreenNavigator {
         navigator: this,
       );
     }
-    beginTransition(current);
+    beginTransition(_currentScreen, hasInit);
   }
 
-  beginTransition(Screen old) async {
-    if (old != null) {
-      await old.startExit();
+  beginTransition(Screen current, bool enter) async {
+    if (current != null) {
+      if (_currentScreen != null) {
+        await _currentScreen.startExit();
+      }
+      _currentScreen = current;
       setState();
     }
     _currentScreen.startEntry();
@@ -156,12 +160,13 @@ class ScreenNavigator {
       final data = last.payload as DefaultScreenData;
       if (data.isHome) {
         home.setDefaultView(
-            isChanging: !isNewScreen, isExpanded: data.expanded);
+          isChanging: !isNewScreen,
+          isExpanded: data.expanded,
+          insetHeight: 0,
+        );
       }
     } else if (type == DetailsScreen) {
-      home.setDetailsView(
-          isChanging: !isNewScreen,
-          insetHeight: DetailsScreen.getHeight(last.payload));
+      home.setDetailsView(isChanging: !isNewScreen, insetHeight: 0);
     } else if (type == MapPickScreen) {
       final data = last.payload as MapPickData;
       if (data.isReview) {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
@@ -69,6 +70,15 @@ class DefaultSearchScreen extends Screen {
         );
       },
       useExpansion: (c) {
+        navigator.push<DefaultSearchScreen>(
+          stackType: ScreenNavigator.replaceSub,
+          payload: DefaultScreenData(
+            isHome: true,
+            useDestnaton: active.isDestination,
+            expanded: true,
+            expandedTransition: true,
+          ),
+        );
         navigator.push<StopsScreen>(stackType: ScreenNavigator.pushSub);
       },
     );
@@ -112,9 +122,13 @@ class DefaultSearchScreen extends Screen {
     print(gestureController.value);
     if (gestureController.value == 1.0) {
       if (!active.node.hasFocus) {
-        Future.delayed(Duration(milliseconds: 200), () {
+        Future.delayed(
+            Duration(milliseconds: data.expandedTransition ? 1500 : 300), () {
           if (gestureController.value == 1.0) {
             FocusScope.of(context()).requestFocus(active.node);
+          }
+          if (data.expandedTransition) {
+            data.expandedTransition = false;
           }
         });
       }
@@ -126,6 +140,7 @@ class DefaultSearchScreen extends Screen {
           expanded: true,
         ),
       );
+
       // TODO screen state change
     } else if (gestureController.value == 0.0) {
       // value only reaches 0 in home. always reset to destination
@@ -245,9 +260,11 @@ class DefaultSearchScreen extends Screen {
         // TODO FIX ANIMATION
         opacity: AlwaysStoppedAnimation(1),
         child: Container(
-          height: lerpDouble(getMinHeight(context()), getMaxHeight(context()),
-                  gestureController.value) -
-              SearchHeaderData.height(2),
+          height: max(
+              lerpDouble(getMinHeight(context()), getMaxHeight(context()),
+                      gestureController.value) -
+                  SearchHeaderData.height(2),
+              0),
           child: StreamBuilder(
             stream: titleStream,
             initialData: "",
@@ -305,31 +322,67 @@ class DefaultSearchScreen extends Screen {
   }
 
   @override
-  double getMaxHeight(BuildContext context) => Screen.getScreenHeight(context);
+  double getMaxHeight(BuildContext context) =>
+      !hasInit && data.expandedTransition ? 0 : Screen.getScreenHeight(context);
 
   @override
-  double getMinHeight(BuildContext context) =>
-      data.isHome ? (hasData ? minHeight : minHeight2) : getMaxHeight(context);
+  double getMinHeight(BuildContext context) {
+    if (!hasInit) {
+      return 0;
+    }
+    return data.isHome
+        ? (hasData ? minHeight : minHeight2)
+        : getMaxHeight(context);
+  }
+
+  @override
+  double getBottomInset() {
+    if (!hasInit) {
+      return 0;
+    }
+    return data.isHome ? (hasData ? minHeight : minHeight2) : null;
+  }
 
   static const double minHeight = 320;
   static const double minHeight2 = 220;
 
   @override
+  Duration getTransitionDuration() {
+    if (!hasInit) {
+      return super.getTransitionDuration();
+    }
+    return Duration(
+        milliseconds: hasData ? 300 : (data.expandedTransition ? 400 : 200));
+  }
+
+  @override
+  int get initDuration => data.expandedTransition ? 300 : 50;
+
+  @override
+  void onInit() {
+    if (data.isHome) {
+      HomeMainScreen.of(context()).map.setBaseInset(getMinHeight(context()));
+    }
+    _handleController();
+  }
+
+  @override
   void startEntry() {
+    super.startEntry();
+    // TODO remove mock implementation of height change
+    if (data.isHome) {
+      Future.delayed(Duration(milliseconds: 1000), () {
+        hasData = true;
+        HomeMainScreen.of(context())
+            .setDefaultView(insetHeight: getMinHeight(context()));
+      });
+    }
+
     if (data.isExanded) {
       gestureController.value = 1.0;
     } else {
       gestureController.value = 0.0;
     }
-    _handleController();
-
-    // TODO remove mock implementation of height change
-    if (data.isHome)
-      Future.delayed(Duration(microseconds: 1000), () {
-        hasData = true;
-        HomeMainScreen.of(context()).setDefaultView(
-            insetHeight: getMinHeight(context()), tag: "default2");
-      });
   }
 
   @override

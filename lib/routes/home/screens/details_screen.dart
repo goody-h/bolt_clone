@@ -62,15 +62,15 @@ class DetailsScreen extends Screen {
     }
 
     // TODO REMOVE TEST IMPLEMENTATION
-    if (!hasThree) {
-      hasThree = true;
-      Future.delayed(Duration(milliseconds: 500), () {
-        invoiceCount = 3;
-        navigator.modifyPayload<DetailsScreen>(3);
-        HomeMainScreen.of(context()).setDetailsView(
-            insetHeight: getMinHeight(context()), tag: "details3");
-      });
-    }
+    // if (!hasThree) {
+    //   hasThree = true;
+    //   Future.delayed(Duration(milliseconds: 500), () {
+    //     invoiceCount = 3;
+    //     navigator.modifyPayload<DetailsScreen>(3);
+    //     HomeMainScreen.of(context()).setDetailsView(
+    //         insetHeight: getMinHeight(context()), tag: "details3");
+    //   });
+    // }
 
     buttonText = "CONFIRM LITE";
     print(buttonText);
@@ -222,8 +222,17 @@ class DetailsScreen extends Screen {
       Screen.getScreenHeight(context) - 85;
 
   @override
-  double getMinHeight(BuildContext context) =>
-      (invoiceCount ?? 2) < 3 ? minHeight : minHeight3;
+  double getMinHeight(BuildContext context) {
+    if (!hasInit) {
+      return 0;
+    }
+    return (invoiceCount ?? 2) < 3 ? minHeight : minHeight3;
+  }
+
+  bool hasInit = false;
+
+  @override
+  double getBottomInset() => getMinHeight(context());
 
   static double getHeight(int count) =>
       (count ?? 2) < 3 ? minHeight : minHeight3;
@@ -232,7 +241,21 @@ class DetailsScreen extends Screen {
   static const double minHeight3 = 350;
 
   @override
+  Duration getTransitionDuration() {
+    if (!hasInit) {
+      return super.getTransitionDuration();
+    }
+    return Duration(milliseconds: 200);
+  }
+
+  @override
+  void onInit() {
+    HomeMainScreen.of(context()).map.setBaseInset(getMinHeight(context()));
+  }
+
+  @override
   void startEntry() {
+    super.startEntry();
     gestureController.value = 0;
   }
 
@@ -246,8 +269,11 @@ class DetailsScreen extends Screen {
 
   @override
   ForeSheetData get useForeSheet => ForeSheetData(
-        offsetHeight: footerHeight,
+        offsetHeight: minHeight,
         text: () => buttonText,
+        height: hasInit ? minHeight : 0,
+        duration: getTransitionDuration(),
+        gestureOffset: footerHeight,
         onTap: () {
           navigator.push<MapPickScreen>(
             stackType: ScreenNavigator.pushMain,
@@ -258,7 +284,6 @@ class DetailsScreen extends Screen {
             ),
           );
         },
-        useSlide: null,
         textStream: textController.stream.distinct(),
       );
 

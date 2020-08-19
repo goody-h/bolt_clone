@@ -11,8 +11,9 @@ class BottomSheetWrapper extends StatelessWidget {
     this.maxHeight,
     this.minHeight,
     this.useGesture,
-    this.useSlide,
     this.useFade,
+    this.duration,
+    this.isAnimating,
   });
 
   final double revealValue;
@@ -20,14 +21,16 @@ class BottomSheetWrapper extends StatelessWidget {
   final double minHeight;
   final Widget child;
   final GestureController useGesture;
-  final Animation<Offset> Function(double height) useSlide;
   final Animation<double> Function() useFade;
+  final Duration duration;
+  final bool isAnimating;
 
   double get height => lerpDouble(minHeight, maxHeight, revealValue);
 
   @override
   Widget build(BuildContext context) {
-    Widget body = Container(
+    Widget body = AnimatedContainer(
+      duration: !isAnimating ? duration : Duration.zero,
       height: height,
       width: double.infinity,
       child: SingleChildScrollView(
@@ -50,21 +53,15 @@ class BottomSheetWrapper extends StatelessWidget {
       ),
     );
 
-    if (useSlide != null) {
-      body = SlideTransition(position: useSlide(height), child: body);
-    }
-
     if (useFade != null) {
       body = FadeTransition(opacity: useFade(), child: body);
     }
 
-    if (useGesture != null) {
-      body = GestureDetector(
-        onVerticalDragUpdate: useGesture.onVerticalDragUpdate,
-        onVerticalDragEnd: useGesture.onVerticalDragEnd,
-        child: body,
-      );
-    }
+    body = GestureDetector(
+      onVerticalDragUpdate: useGesture?.onVerticalDragUpdate,
+      onVerticalDragEnd: useGesture?.onVerticalDragEnd,
+      child: body,
+    );
 
     return Positioned(
       left: 0,

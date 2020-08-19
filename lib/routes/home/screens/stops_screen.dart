@@ -80,7 +80,7 @@ class StopsScreen extends Screen {
   @override
   Widget getBottomSheet(BuildContext context) {
     return Container(
-      height: getMaxHeight(context),
+      height: Screen.getScreenHeight(context),
       width: double.infinity,
       padding: EdgeInsets.only(bottom: 110, right: 20, left: 20),
       child: Column(
@@ -96,14 +96,26 @@ class StopsScreen extends Screen {
     );
   }
 
+  bool hasInit = false;
+
   @override
-  double getMaxHeight(BuildContext context) => Screen.getScreenHeight(context);
+  double getMaxHeight(BuildContext context) =>
+      hasInit ? Screen.getScreenHeight(context) : 0;
 
   @override
   double getMinHeight(BuildContext context) => getMaxHeight(context);
 
   @override
+  Duration getTransitionDuration() {
+    if (!hasInit) {
+      return super.getTransitionDuration();
+    }
+    return Duration(milliseconds: 400);
+  }
+
+  @override
   void startEntry() {
+    super.startEntry();
     gestureController.value = 1;
     FocusManager.instance.primaryFocus.unfocus();
   }
@@ -119,10 +131,13 @@ class StopsScreen extends Screen {
         onPop: navigator.pop,
         title: "Confirm route",
       );
+
   @override
   ForeSheetData get useForeSheet => ForeSheetData(
         text: () => "Done",
         offsetHeight: getMaxHeight(context()),
+        height: hasInit ? getMaxHeight(context()) : 0,
+        duration: getTransitionDuration(),
         onTap: () {
           // TODO got to details
           navigator.push<DetailsScreen>(stackType: ScreenNavigator.pushMain);
