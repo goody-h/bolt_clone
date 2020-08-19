@@ -164,7 +164,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       builder: (context, modal) {
         final isAnimating = _gestureController.isAnimating ||
             (previousAValue != _gestureController.value &&
-                (previousAValue - _gestureController.value).abs() != 1.0);
+                (previousAValue - _gestureController.value).abs() != 1.0) ||
+            ![0.0, 1.0].contains(_gestureController.value);
         previousAValue = _gestureController.value;
 
         final bottomPadding = currentScreen.getBottomInset() ?? previousInset;
