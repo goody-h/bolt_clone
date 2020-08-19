@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:bolt_clone/blocs/user_bloc/user.dart';
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
+import 'package:bolt_clone/routes/home/home.dart';
 import 'package:bolt_clone/routes/home/screens/widgets/invoice_item.dart';
 import 'package:bolt_clone/routes/home/utils/screen_navigator.dart';
 import 'package:bolt_clone/utils.dart';
@@ -15,13 +16,12 @@ import 'default_screen.dart';
 class DetailsScreen extends Screen {
   DetailsScreen({
     BuildContext Function() context,
-    AnimationController transitionController,
     AnimationController gestureController,
     ScreenNavigator navigator,
+    this.invoiceCount,
   }) : super(
           navigator: navigator,
           context: context,
-          transitionController: transitionController,
           gestureController: gestureController,
         ) {
     gestureController.addListener(_handleGesture);
@@ -49,12 +49,26 @@ class DetailsScreen extends Screen {
   bool get isExpanded => gestureController.value > 0.5;
   static const double footerHeight = 135;
 
+  // TODO REMOVE TEST IMPLEMENTATION
+  bool hasThree = false;
+
   Widget body(TripState state) {
     if (state is TripRequest) {
       //TODO get invoices and current tier
       final invoices = state.invoices;
       final tier = state.activeTier;
     }
+
+    // TODO REMOVE TEST IMPLEMENTATION
+    // if (!hasThree) {
+    //   hasThree = true;
+    //   Future.delayed(Duration(milliseconds: 500), () {
+    //     invoiceCount = 3;
+    //     navigator.modifyPayload<DetailsScreen>(3);
+    //     HomeMainScreen.of(context()).setDetailsView(
+    //         insetHeight: getMinHeight(context()), tag: "details3");
+    //   });
+    // }
 
     buttonText = "CONFIRM LITE";
     print(buttonText);
@@ -199,17 +213,47 @@ class DetailsScreen extends Screen {
     );
   }
 
+  int invoiceCount;
+
   @override
   double getMaxHeight(BuildContext context) =>
       Screen.getScreenHeight(context) - 85;
 
   @override
-  double getMinHeight(BuildContext context) => minHeight;
+  double getMinHeight(BuildContext context) {
+    if (!hasInit) {
+      return 0;
+    }
+    return (invoiceCount ?? 2) < 3 ? minHeight : minHeight3;
+  }
 
-  static final double minHeight = 320;
+  bool hasInit = false;
+
+  @override
+  double getBottomInset() => getMinHeight(context());
+
+  static double getHeight(int count) =>
+      (count ?? 2) < 3 ? minHeight : minHeight3;
+
+  static const double minHeight = 320;
+  static const double minHeight3 = 350;
+
+  @override
+  Duration getTransitionDuration() {
+    if (!hasInit) {
+      return super.getTransitionDuration();
+    }
+    return Duration(milliseconds: 200);
+  }
+
+  @override
+  void onInit() {
+    HomeMainScreen.of(context()).map.setBaseInset(getMinHeight(context()));
+  }
 
   @override
   void startEntry() {
+    super.startEntry();
     gestureController.value = 0;
   }
 
@@ -223,8 +267,11 @@ class DetailsScreen extends Screen {
 
   @override
   ForeSheetData get useForeSheet => ForeSheetData(
-        offsetHeight: footerHeight,
+        offsetHeight: minHeight,
         text: () => buttonText,
+        height: hasInit ? minHeight : 0,
+        duration: getTransitionDuration(),
+        gestureOffset: footerHeight,
         onTap: () {
           navigator.push<MapPickScreen>(
             stackType: ScreenNavigator.pushMain,
@@ -235,7 +282,6 @@ class DetailsScreen extends Screen {
             ),
           );
         },
-        useSlide: null,
         textStream: textController.stream.distinct(),
       );
 

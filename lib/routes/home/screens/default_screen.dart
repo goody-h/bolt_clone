@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
+import 'package:bolt_clone/routes/home/home.dart';
 import 'package:bolt_clone/routes/home/models/default_screen_data.dart';
 import 'package:bolt_clone/routes/home/screens/screens.dart';
 import 'package:bolt_clone/routes/home/screens/widgets/location_item.dart';
@@ -17,14 +19,12 @@ export 'package:bolt_clone/routes/home/models/default_screen_data.dart';
 class DefaultSearchScreen extends Screen {
   DefaultSearchScreen({
     BuildContext Function() context,
-    AnimationController transitionController,
     AnimationController gestureController,
     ScreenNavigator navigator,
     this.data,
   }) : super(
           navigator: navigator,
           context: context,
-          transitionController: transitionController,
           gestureController: gestureController,
         ) {
     pickupController = AddressSearchController(
@@ -68,6 +68,15 @@ class DefaultSearchScreen extends Screen {
         );
       },
       useExpansion: (c) {
+        navigator.push<DefaultSearchScreen>(
+          stackType: ScreenNavigator.replaceSub,
+          payload: DefaultScreenData(
+            isHome: true,
+            useDestnaton: active.isDestination,
+            expanded: true,
+            expandedTransition: true,
+          ),
+        );
         navigator.push<StopsScreen>(stackType: ScreenNavigator.pushSub);
       },
     );
@@ -78,6 +87,7 @@ class DefaultSearchScreen extends Screen {
       pickupController.resultStream.listen(_updateTitle),
       destinationController.resultStream.listen(_updateTitle),
     ];
+    hasData = !data.isHome;
   }
 
   _updateTitle(_) {
@@ -110,9 +120,13 @@ class DefaultSearchScreen extends Screen {
     print(gestureController.value);
     if (gestureController.value == 1.0) {
       if (!active.node.hasFocus) {
-        Future.delayed(Duration(milliseconds: 200), () {
+        Future.delayed(
+            Duration(milliseconds: data.expandedTransition ? 1500 : 300), () {
           if (gestureController.value == 1.0) {
             FocusScope.of(context()).requestFocus(active.node);
+          }
+          if (data.expandedTransition) {
+            data.expandedTransition = false;
           }
         });
       }
@@ -124,6 +138,7 @@ class DefaultSearchScreen extends Screen {
           expanded: true,
         ),
       );
+
       // TODO screen state change
     } else if (gestureController.value == 0.0) {
       // value only reaches 0 in home. always reset to destination
@@ -236,13 +251,18 @@ class DefaultSearchScreen extends Screen {
 
   Stream<String> get titleStream => searchController.stream.asBroadcastStream();
 
+  // TODO remove mock implementation
+  bool hasData = false;
+
   Widget get body => FadeTransition(
         // TODO FIX ANIMATION
         opacity: AlwaysStoppedAnimation(1),
         child: Container(
-          height: lerpDouble(getMinHeight(context()), getMaxHeight(context()),
-                  gestureController.value) -
-              SearchHeaderData.height(2),
+          height: max(
+              lerpDouble(getMinHeight(context()), getMaxHeight(context()),
+                      gestureController.value) -
+                  SearchHeaderData.height(2),
+              0),
           child: StreamBuilder(
             stream: titleStream,
             initialData: "",
@@ -282,7 +302,7 @@ class DefaultSearchScreen extends Screen {
                     ],
                   );
                 },
-                itemCount: isExpanded ? 5 : 3,
+                itemCount: hasData ? (isExpanded ? 5 : 3) : 0,
               );
             },
           ),
@@ -300,22 +320,67 @@ class DefaultSearchScreen extends Screen {
   }
 
   @override
-  double getMaxHeight(BuildContext context) => Screen.getScreenHeight(context);
+  double getMaxHeight(BuildContext context) =>
+      !hasInit && data.expandedTransition ? 0 : Screen.getScreenHeight(context);
 
   @override
-  double getMinHeight(BuildContext context) =>
-      data.isHome ? minHeight : getMaxHeight(context);
+  double getMinHeight(BuildContext context) {
+    if (!hasInit) {
+      return 0;
+    }
+    return data.isHome
+        ? (hasData ? minHeight : minHeight2)
+        : getMaxHeight(context);
+  }
 
-  static final double minHeight = 320;
+  @override
+  double getBottomInset() {
+    if (!hasInit) {
+      return 0;
+    }
+    return data.isHome ? (hasData ? minHeight : minHeight2) : null;
+  }
+
+  static const double minHeight = 320;
+  static const double minHeight2 = 220;
+
+  @override
+  Duration getTransitionDuration() {
+    if (!hasInit) {
+      return super.getTransitionDuration();
+    }
+    return Duration(
+        milliseconds: hasData ? 300 : (data.expandedTransition ? 400 : 200));
+  }
+
+  @override
+  int get initDuration => data.expandedTransition ? 300 : 50;
+
+  @override
+  void onInit() {
+    if (data.isHome) {
+      HomeMainScreen.of(context()).map.setBaseInset(getMinHeight(context()));
+    }
+    _handleController();
+  }
 
   @override
   void startEntry() {
+    super.startEntry();
+    // TODO remove mock implementation of height change
+    if (data.isHome) {
+      Future.delayed(Duration(milliseconds: 1000), () {
+        hasData = true;
+        HomeMainScreen.of(context())
+            .setDefaultView(insetHeight: getMinHeight(context()));
+      });
+    }
+
     if (data.isExanded) {
       gestureController.value = 1.0;
     } else {
       gestureController.value = 0.0;
     }
-    _handleController();
   }
 
   @override

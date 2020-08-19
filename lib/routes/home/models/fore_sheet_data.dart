@@ -5,14 +5,18 @@ class ForeSheetData {
     this.text,
     this.offsetHeight,
     this.onTap,
-    this.useSlide,
     this.textStream,
     this.reverseGesture = false,
+    this.height,
+    this.duration,
+    this.gestureOffset,
   });
   final String Function() text;
   final double offsetHeight;
   final VoidCallback onTap;
-  final Animation<Offset> Function() useSlide;
   final Stream<String> textStream;
   final bool reverseGesture;
+  final double height;
+  final Duration duration;
+  final double gestureOffset;
 }

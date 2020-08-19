@@ -1,5 +1,6 @@
 import 'package:bolt_clone/routes/home/utils/screen_navigator.dart';
 import 'package:bolt_clone/routes/home/widgets/searchHeader.dart';
+import 'package:bolt_clone/utils.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -17,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   AnimationController _gestureController;
-  AnimationController _transitionController;
   AnimationController _modalTransitionController;
 
   GestureController controller;
@@ -84,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   double previousAValue = 0;
+  double previousInset = 0;
 
   getLowerSheet(List<Widget> stack, bool isAnimating) {
     if (currentScreen.useLowerSheet != null) {
@@ -95,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  getForeSheet(List<Widget> stack) {
+  getForeSheet(List<Widget> stack, bool isAnimating) {
     final data = currentScreen.useForeSheet;
     if (data != null) {
       stack.add(ForeSheet(
@@ -103,9 +104,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         textStream: data.textStream,
         offsetHeight: data.offsetHeight,
         revealValue: _gestureController.value,
-        useSlide: data.useSlide,
         onTap: data.onTap,
         reverseGesture: data.reverseGesture,
+        height: data.height,
+        duration: data.duration,
+        isAnimating: isAnimating,
+        gestureOffset: data.gestureOffset,
       ));
     }
   }
@@ -158,23 +162,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       animation: _gestureController,
       builder: (context, modal) {
         final isAnimating = _gestureController.isAnimating ||
-            previousAValue != _gestureController.value;
+            (previousAValue != _gestureController.value &&
+                (previousAValue - _gestureController.value).abs() != 1.0) ||
+            ![0.0, 1.0].contains(_gestureController.value);
         previousAValue = _gestureController.value;
 
+        final bottomPadding = currentScreen.getBottomInset() ?? previousInset;
+        previousInset = currentScreen.getBottomInset() ?? previousInset;
+
         final layers = <Widget>[
+          Positioned(
+            bottom: 15,
+            right: 15,
+            child: Visibility(
+              child: AnimatedContainer(
+                duration: currentScreen.getTransitionDuration(),
+                padding: EdgeInsets.only(bottom: bottomPadding),
+                child: FloatingActionButton(
+                  heroTag: "location",
+                  backgroundColor: AppColors.white,
+                  onPressed: HomeMainScreen.of(context).camera.justifyCamera,
+                  child: Icon(
+                    Icons.my_location,
+                    color: AppColors.black,
+                  ),
+                  mini: true,
+                ),
+              ),
+              visible: HomeMainScreen.of(context).locationBtn.isVisible,
+            ),
+          ),
+          Positioned.fill(
+            child: AbsorbPointer(
+              absorbing: HomeMainScreen.of(context).pin.isInitializing,
+              child: SizedBox.expand(),
+            ),
+          ),
           Scrim(scrimValue: _gestureController.value, onTap: navigator.pop),
           BottomSheetWrapper(
             revealValue: _gestureController.value,
             maxHeight: currentScreen.getMaxHeight(context),
             minHeight: currentScreen.getMinHeight(context),
             useGesture: currentScreen.useGesture ? controller : null,
-            useSlide: currentScreen.useSlide,
             child: currentScreen.getBottomSheet(context),
+            duration: currentScreen.getTransitionDuration(),
+            isAnimating: isAnimating,
           ),
         ];
 
         getLowerSheet(layers, isAnimating);
-        getForeSheet(layers);
+        getForeSheet(layers, isAnimating);
         getSearchHeader(layers, isAnimating);
         // layers.add(modal);
 

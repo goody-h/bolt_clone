@@ -29,18 +29,27 @@ class ScreenNavigator {
   static const pushSub = 3;
 
   final AnimationController gestureController;
-  AnimationController _transitionController;
   AnimationController _modalTransitionController;
 
   ScreenNavigator({this.context, this.setState, this.gestureController});
 
   init() {
     hasInit = true;
+    beginTransition(null, true);
     onSetScreen(last.type, true);
   }
 
   List<_ScreenData> get currentStack =>
       subStack.isNotEmpty ? subStack : mainStack;
+
+  modifyPayload<T extends Screen>(dynamic payload) {
+    if (last.type == T) {
+      currentStack[currentStack.length - 1] = _ScreenData(
+        type: T,
+        payload: payload,
+      );
+    }
+  }
 
   push<T extends Screen>({@required int stackType, dynamic payload}) {
     final shouldSetScreen = T != last.type;
@@ -92,7 +101,7 @@ class ScreenNavigator {
   }
 
   setScreen() {
-    final current = _currentScreen;
+    Screen _currentScreen;
     if (last.type == DefaultSearchScreen) {
       _currentScreen = DefaultSearchScreen(
         context: context,
@@ -105,6 +114,7 @@ class ScreenNavigator {
         context: context,
         gestureController: gestureController,
         navigator: this,
+        invoiceCount: last.payload ?? 2,
       );
     } else if (last.type == MapPickScreen) {
       _currentScreen = MapPickScreen(
@@ -128,12 +138,15 @@ class ScreenNavigator {
         navigator: this,
       );
     }
-    beginTransition(current);
+    beginTransition(_currentScreen, hasInit);
   }
 
-  beginTransition(Screen old) async {
-    if (old != null) {
-      await old.startExit();
+  beginTransition(Screen current, bool enter) async {
+    if (current != null) {
+      if (_currentScreen != null) {
+        await _currentScreen.startExit();
+      }
+      _currentScreen = current;
       setState();
     }
     _currentScreen.startEntry();
@@ -146,10 +159,13 @@ class ScreenNavigator {
       final data = last.payload as DefaultScreenData;
       if (data.isHome) {
         home.setDefaultView(
-            isChanging: !isNewScreen, isExpanded: data.expanded);
+          isChanging: !isNewScreen,
+          isExpanded: data.expanded,
+          insetHeight: 0,
+        );
       }
     } else if (type == DetailsScreen) {
-      home.setDetailsView(isChanging: !isNewScreen);
+      home.setDetailsView(isChanging: !isNewScreen, insetHeight: 0);
     } else if (type == MapPickScreen) {
       final data = last.payload as MapPickData;
       if (data.isReview) {

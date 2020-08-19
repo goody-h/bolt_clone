@@ -3,24 +3,32 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:bolt_clone/blocs/trip_bloc/trip.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:async';
+
+class MapData {
+  MapData({this.mapTag, this.bottomPadding, this.secondaryPadding});
+  String mapTag;
+  double bottomPadding;
+  double secondaryPadding;
+}
 
 class Map extends StatelessWidget {
   const Map({
     Key key,
+    this.controller,
     this.loadMap,
     this.onLoad,
     this.pin,
     this.marker,
     this.route,
-    this.baseBottomInset,
   }) : super(key: key);
 
-  final bool loadMap;
+  final Completer<bool> loadMap;
   final Function(GoogleMapController) onLoad;
   final SelectionPinController pin;
   final RouteController route;
   final MarkerController marker;
-  final double baseBottomInset;
+  final MapDataController controller;
 
   // Initial location of the Map view
   final CameraPosition _initialLocation =
@@ -28,30 +36,35 @@ class Map extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!loadMap) {
-      return SizedBox.shrink();
-    }
-    final state = BlocProvider.of<TripBloc>(context).state;
-    final markers = marker.getMarkers(context, state);
-    final polylines = route.getRoute();
-
-    return GoogleMap(
-      initialCameraPosition: _initialLocation,
-      myLocationEnabled: true,
-      myLocationButtonEnabled: false,
-      mapType: MapType.normal,
-      zoomGesturesEnabled: true,
-      zoomControlsEnabled: false,
-      onMapCreated: onLoad,
-      onCameraMove: (CameraPosition position) {
-        pin.movePinPosition(position.target);
+    return StreamBuilder<MapData>(
+      stream: controller.stream,
+      initialData: controller.data,
+      builder: (context, snap) {
+        if (!loadMap.isCompleted) {
+          return SizedBox.shrink();
+        }
+        final state = BlocProvider.of<TripBloc>(context).state;
+        final markers = marker.getMarkers(context, state);
+        final polylines = route.getRoute();
+        return GoogleMap(
+          initialCameraPosition: _initialLocation,
+          myLocationEnabled: true,
+          myLocationButtonEnabled: false,
+          mapType: MapType.normal,
+          zoomGesturesEnabled: true,
+          zoomControlsEnabled: false,
+          onMapCreated: onLoad,
+          onCameraMove: (CameraPosition position) {
+            pin.movePinPosition(position.target);
+          },
+          onCameraIdle: () {
+            pin.updatePinPosition(context);
+          },
+          padding: EdgeInsets.only(bottom: controller.data.bottomPadding),
+          markers: markers != null ? Set<Marker>.from(markers) : null,
+          polylines: polylines != null ? Set<Polyline>.from(polylines) : null,
+        );
       },
-      onCameraIdle: () {
-        pin.updatePinPosition(context);
-      },
-      padding: EdgeInsets.only(bottom: baseBottomInset),
-      markers: markers != null ? Set<Marker>.from(markers) : null,
-      polylines: polylines != null ? Set<Polyline>.from(polylines) : null,
     );
   }
 }
