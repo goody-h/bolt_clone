@@ -11,14 +11,12 @@ import 'address_pick_screen.dart';
 class AddressSearchScreen extends Screen {
   AddressSearchScreen({
     BuildContext Function() context,
-    AnimationController transitionController,
     AnimationController gestureController,
     ScreenNavigator navigator,
     this.type,
   }) : super(
           navigator: navigator,
           context: context,
-          transitionController: transitionController,
           gestureController: gestureController,
         ) {
     searchController = AddressSearchController(

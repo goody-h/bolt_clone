@@ -29,7 +29,6 @@ class ScreenNavigator {
   static const pushSub = 3;
 
   final AnimationController gestureController;
-  AnimationController _transitionController;
   AnimationController _modalTransitionController;
 
   ScreenNavigator({this.context, this.setState, this.gestureController});

@@ -19,14 +19,12 @@ class MapPickScreen extends Screen {
 
   MapPickScreen({
     BuildContext Function() context,
-    AnimationController transitionController,
     AnimationController gestureController,
     ScreenNavigator navigator,
     this.data,
   }) : super(
           navigator: navigator,
           context: context,
-          transitionController: transitionController,
           gestureController: gestureController,
         );
 

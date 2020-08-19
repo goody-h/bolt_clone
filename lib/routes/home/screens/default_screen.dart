@@ -19,14 +19,12 @@ export 'package:bolt_clone/routes/home/models/default_screen_data.dart';
 class DefaultSearchScreen extends Screen {
   DefaultSearchScreen({
     BuildContext Function() context,
-    AnimationController transitionController,
     AnimationController gestureController,
     ScreenNavigator navigator,
     this.data,
   }) : super(
           navigator: navigator,
           context: context,
-          transitionController: transitionController,
           gestureController: gestureController,
         ) {
     pickupController = AddressSearchController(

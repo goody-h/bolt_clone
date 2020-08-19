@@ -11,14 +11,12 @@ class StopsScreen extends Screen {
 
   StopsScreen({
     BuildContext Function() context,
-    AnimationController transitionController,
     AnimationController gestureController,
     ScreenNavigator navigator,
     this.setState,
   }) : super(
           navigator: navigator,
           context: context,
-          transitionController: transitionController,
           gestureController: gestureController,
         ) {
     final trip = BlocProvider.of<TripBloc>(context()).state;

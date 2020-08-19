@@ -16,14 +16,12 @@ import 'default_screen.dart';
 class DetailsScreen extends Screen {
   DetailsScreen({
     BuildContext Function() context,
-    AnimationController transitionController,
     AnimationController gestureController,
     ScreenNavigator navigator,
     this.invoiceCount,
   }) : super(
           navigator: navigator,
           context: context,
-          transitionController: transitionController,
           gestureController: gestureController,
         ) {
     gestureController.addListener(_handleGesture);

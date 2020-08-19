@@ -9,12 +9,10 @@ export 'package:bolt_clone/routes/home/models/address_search_controller.dart';
 abstract class Screen {
   Screen({
     @required this.context,
-    @required this.transitionController,
     @required this.gestureController,
     @required this.navigator,
   });
   final BuildContext Function() context;
-  final AnimationController transitionController;
   final AnimationController gestureController;
   final ScreenNavigator navigator;
 

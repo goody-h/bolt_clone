@@ -102,8 +102,7 @@ class HomeMain extends StatefulWidget {
   HomeMainState createState() => HomeMainState();
 }
 
-class HomeMainState extends State<HomeMain>
-    with TickerProviderStateMixin, WidgetsBindingObserver {
+class HomeMainState extends State<HomeMain> with WidgetsBindingObserver {
   TripBloc trip;
   MenuButtonController menu;
   MapDataController map;
@@ -120,14 +119,7 @@ class HomeMainState extends State<HomeMain>
     trip = TripBloc(
       dataRepository: BlocProvider.of<UserBloc>(context).dataRepository,
     );
-    menu = MenuButtonController(
-      controller: AnimationController(
-        vsync: this,
-        value: 0,
-        duration: Duration(milliseconds: 300),
-      ),
-      registerPop: widget.registerPop,
-    );
+    menu = MenuButtonController(registerPop: widget.registerPop);
 
     map = MapDataController(
       hasInit: hasInit,
@@ -170,7 +162,6 @@ class HomeMainState extends State<HomeMain>
   @override
   void dispose() {
     map.dispose();
-    menu.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -227,10 +218,16 @@ class HomeMainState extends State<HomeMain>
                   child: FloatingActionButton(
                     backgroundColor: AppColors.white,
                     onPressed: () => menu.onClick(context),
-                    child: AnimatedIcon(
-                      icon: AnimatedIcons.menu_arrow,
-                      progress: menu.controller,
-                      color: AppColors.blackLight,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: menu._canPop ? 1 : 0),
+                      duration: Duration(milliseconds: 300),
+                      builder: (context, value, child) {
+                        return AnimatedIcon(
+                          icon: AnimatedIcons.menu_arrow,
+                          progress: AlwaysStoppedAnimation(value),
+                          color: AppColors.blackLight,
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -263,18 +260,13 @@ class LocationButtonController {
 }
 
 class MenuButtonController {
-  AnimationController controller;
   Function(BoolCallback) registerPop;
   Function(BuildContext) onClick;
   BoolCallback _onPopCallback;
   bool _canPop = false;
 
-  MenuButtonController({this.controller, this.registerPop}) {
+  MenuButtonController({this.registerPop}) {
     onClick = _openDrawer;
-  }
-
-  dispose() {
-    controller.dispose();
   }
 
   registerOnPop(BoolCallback onPop) {
@@ -288,7 +280,6 @@ class MenuButtonController {
       onClick = _canPop && _onPopCallback != null
           ? (context) => _onPopCallback()
           : _openDrawer;
-      _canPop ? controller.forward() : controller.reverse();
     }
   }
 

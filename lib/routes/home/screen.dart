@@ -18,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   AnimationController _gestureController;
-  AnimationController _transitionController;
   AnimationController _modalTransitionController;
 
   GestureController controller;
