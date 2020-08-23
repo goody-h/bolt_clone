@@ -9,6 +9,7 @@ import 'package:bolt_clone/routes/home/screens/screens.dart';
 import 'package:bolt_clone/routes/home/screens/widgets/location_item.dart';
 import 'package:bolt_clone/routes/home/utils/screen_navigator.dart';
 import 'package:bolt_clone/utils.dart';
+import 'package:data_repository/data_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import './screen.dart';
@@ -71,7 +72,7 @@ class DefaultSearchScreen extends Screen {
         navigator.push<DefaultSearchScreen>(
           stackType: ScreenNavigator.replaceSub,
           payload: DefaultScreenData(
-            isHome: true,
+            isHome: data.isHome,
             useDestnaton: active.isDestination,
             expanded: true,
             expandedTransition: true,
@@ -106,6 +107,7 @@ class DefaultSearchScreen extends Screen {
   AddressSearchController active;
 
   final DefaultScreenData data;
+  final rnd = Random();
 
   String text(bool isDestination) {
     final tripState = BlocProvider.of<TripBloc>(context()).state;
@@ -117,7 +119,6 @@ class DefaultSearchScreen extends Screen {
   }
 
   _handleController() {
-    print(gestureController.value);
     if (gestureController.value == 1.0) {
       if (!active.node.hasFocus) {
         Future.delayed(
@@ -240,6 +241,16 @@ class DefaultSearchScreen extends Screen {
       );
 
   _onItemClick(int index) {
+    BlocProvider.of<TripBloc>(context()).stateId =
+        "trip-bloc-${rnd.nextDouble()}";
+    BlocProvider.of<TripBloc>(context()).add(TripDestinationUpdated(
+      location: Position(
+        latitude: 4.902008,
+        longitude: 7.005,
+        address: "",
+      ),
+    ));
+
     navigator.push<DetailsScreen>(stackType: ScreenNavigator.pushMain);
     // TODO GO TO DETAILS
   }
@@ -371,8 +382,9 @@ class DefaultSearchScreen extends Screen {
     if (data.isHome) {
       Future.delayed(Duration(milliseconds: 1000), () {
         hasData = true;
-        HomeMainScreen.of(context())
-            .setDefaultView(insetHeight: getMinHeight(context()));
+        //TODO explain what happened here to "expanded true"
+        HomeMainScreen.of(context()).setDefaultView(
+            insetHeight: getMinHeight(context()), isExpanded: true);
       });
     }
 

@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+class Secrets {
+  static const MAPS_API_KEY = "AIzaSyB77nUQpw6g5n5qn84t5WUfHQ7esN5mXwk";
+  static const PS_PUB_KEY = "pk_test_19e6474f7f96efbd9312b241f1c5f4741590d136";
+  // static const PS_PUB_KEY = "pk_live_356c081bb700941e5ef1f15d73e253cbcfb42e98";
+}
+
 class AppColors {
   static const white = Colors.white;
   static const black = Colors.black;

@@ -204,7 +204,6 @@ class MapPickScreen extends Screen {
               _showMessage(context(), m["message"]);
             });
             final state = BlocProvider.of<UserBloc>(context()).state;
-            print(state);
             if (state is UserLoaded) {
               await manager.checkout(context(), Invoice(), state.user);
             }

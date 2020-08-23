@@ -35,8 +35,8 @@ class ScreenNavigator {
 
   init() {
     hasInit = true;
+    onSetScreen(last.type, true, last);
     beginTransition(null, true);
-    onSetScreen(last.type, true);
   }
 
   List<_ScreenData> get currentStack =>
@@ -52,6 +52,7 @@ class ScreenNavigator {
   }
 
   push<T extends Screen>({@required int stackType, dynamic payload}) {
+    final last = this.last;
     final shouldSetScreen = T != last.type;
 
     final stack = stackType < 2
@@ -76,12 +77,11 @@ class ScreenNavigator {
         ),
       );
     }
-
+    if (hasInit) {
+      onSetScreen(T, shouldSetScreen, last);
+    }
     if (shouldSetScreen) {
       setScreen();
-    }
-    if (hasInit) {
-      onSetScreen(T, shouldSetScreen);
     }
   }
 
@@ -138,31 +138,43 @@ class ScreenNavigator {
         navigator: this,
       );
     }
-    beginTransition(_currentScreen, hasInit);
+    if (this._currentScreen == null) {
+      this._currentScreen = _currentScreen;
+      beginTransition(null, hasInit);
+    } else {
+      beginTransition(_currentScreen, hasInit);
+    }
   }
 
   beginTransition(Screen current, bool enter) async {
-    if (current != null) {
-      if (_currentScreen != null) {
-        await _currentScreen.startExit();
+    if (enter) {
+      if (current != null) {
+        if (_currentScreen != null) {
+          await _currentScreen.startExit();
+        }
+        _currentScreen = current;
+        setState();
       }
-      _currentScreen = current;
-      setState();
+      _currentScreen.startEntry();
     }
-    _currentScreen.startEntry();
   }
 
-  onSetScreen(Type type, bool isNewScreen) {
-    // TODO FIX MAP HANDLER
+  onSetScreen(Type type, bool isNewScreen, _ScreenData previous) {
     final home = HomeMainScreen.of(context());
     if (type == DefaultSearchScreen) {
       final data = last.payload as DefaultScreenData;
       if (data.isHome) {
-        home.setDefaultView(
-          isChanging: !isNewScreen,
-          isExpanded: data.expanded,
-          insetHeight: 0,
-        );
+        if (isNewScreen ||
+            (previous.payload is DefaultScreenData &&
+                previous.payload.expanded != data.expanded)) {
+          home.setDefaultView(
+            isChanging: !isNewScreen &&
+                previous.payload is DefaultScreenData &&
+                previous.payload.expanded != data.expanded,
+            isExpanded: data.expanded,
+            insetHeight: 0,
+          );
+        }
       }
     } else if (type == DetailsScreen) {
       home.setDetailsView(isChanging: !isNewScreen, insetHeight: 0);
@@ -209,7 +221,7 @@ class ScreenNavigator {
       // TODO handle modals
       gestureController.reverse();
     }
-    onSetScreen(last.type, last.type != pop.type);
+    onSetScreen(last.type, last.type != pop.type, last);
 
     return false;
   }

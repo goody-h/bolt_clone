@@ -32,7 +32,6 @@ class ForeSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(text());
     Widget body = AnimatedContainer(
       duration: !isAnimating ? (duration ?? Duration.zero) : Duration.zero,
       height: !reverseGesture

@@ -13,7 +13,7 @@ PaymentMethod paymentMethodFromString(String method) {
     case "newCard":
       return PaymentMethod.newcard;
     default:
-      return PaymentMethod.cash;
+      return PaymentMethod.card;
   }
 }
 
@@ -52,11 +52,11 @@ class InvoiceData {
   InvoiceData({
     this.tier,
     this.pickUp = const Position(),
-    this.stops,
+    List<Position> stops,
     this.distance,
     this.time,
     this.method = PaymentMethod.newcard,
-  });
+  }) : this.stops = stops ?? List.filled(2, null, growable: true);
 
   InvoiceData.fromJson(Map<String, dynamic> data)
       : this(
@@ -71,7 +71,7 @@ class InvoiceData {
 
   String tier;
   Position pickUp;
-  List<Position> stops = List.filled(2, null, growable: true);
+  List<Position> stops;
   double distance;
   int time;
   PaymentMethod method;
