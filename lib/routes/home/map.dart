@@ -43,26 +43,36 @@ class Map extends StatelessWidget {
         if (!loadMap.isCompleted) {
           return SizedBox.shrink();
         }
-        final state = BlocProvider.of<TripBloc>(context).state;
-        final markers = marker.getMarkers(context, state);
-        final polylines = route.getRoute();
-        return GoogleMap(
-          initialCameraPosition: _initialLocation,
-          myLocationEnabled: true,
-          myLocationButtonEnabled: false,
-          mapType: MapType.normal,
-          zoomGesturesEnabled: true,
-          zoomControlsEnabled: false,
-          onMapCreated: onLoad,
-          onCameraMove: (CameraPosition position) {
-            pin.movePinPosition(position.target);
+
+        print("map padding bottom ${controller.data.bottomPadding}");
+
+        return BlocBuilder<TripBloc, TripState>(
+          builder: (context, state) {
+            final markers = marker.getMarkers(context, state);
+            final polylines = route.getRoute(state);
+            if (BlocProvider.of<TripBloc>(context).stateId == state.stateId) {
+              pin.positionMap(state);
+            }
+            return GoogleMap(
+              initialCameraPosition: _initialLocation,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              mapType: MapType.normal,
+              zoomGesturesEnabled: true,
+              zoomControlsEnabled: false,
+              onMapCreated: onLoad,
+              onCameraMove: (CameraPosition position) {
+                pin.movePinPosition(position.target);
+              },
+              onCameraIdle: () {
+                pin.updatePinPosition(context);
+              },
+              padding: EdgeInsets.only(bottom: controller.data.bottomPadding),
+              markers: markers != null ? Set<Marker>.from(markers) : null,
+              polylines:
+                  polylines != null ? Set<Polyline>.from(polylines) : null,
+            );
           },
-          onCameraIdle: () {
-            pin.updatePinPosition(context);
-          },
-          padding: EdgeInsets.only(bottom: controller.data.bottomPadding),
-          markers: markers != null ? Set<Marker>.from(markers) : null,
-          polylines: polylines != null ? Set<Polyline>.from(polylines) : null,
         );
       },
     );

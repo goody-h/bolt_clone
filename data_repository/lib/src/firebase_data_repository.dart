@@ -107,7 +107,7 @@ class FirebaseDataRepository implements DataRepository {
     },
     "trip": {
       "id": "trip1",
-      "status": "assigning",
+      "status": "completed",
       "driver": {
         "id": "driver1",
         "rating": 4.3,

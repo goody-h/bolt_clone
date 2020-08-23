@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bolt_clone/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
@@ -12,8 +13,7 @@ import 'package:data_repository/data_repository.dart';
 // String backendUrl = 'https://bold-prod.herokuapp.com';
 String backendUrl = 'https://bolt-clone-server.herokuapp.com';
 
-String paystackPublicKey = 'pk_test_19e6474f7f96efbd9312b241f1c5f4741590d136';
-// String paystackPublicKey = 'pk_live_356c081bb700941e5ef1f15d73e253cbcfb42e98';
+String paystackPublicKey = Secrets.PS_PUB_KEY;
 
 const String appName = 'Bolt clone';
 

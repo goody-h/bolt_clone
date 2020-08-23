@@ -71,7 +71,6 @@ class DetailsScreen extends Screen {
     // }
 
     buttonText = "CONFIRM LITE";
-    print(buttonText);
     textController.sink.add(buttonText);
 
     return FadeTransition(
